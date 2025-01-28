@@ -1,4 +1,4 @@
-FROM ubuntu:18.04 as baseimage1804
+FROM ubuntu:22.04 as baseimage2204
 LABEL maintainer tpfuemp@github
 
 ENV DEBIAN_FRONTEND noninteractive
@@ -8,21 +8,16 @@ RUN apt-get update && \
     automake autotools-dev build-essential dh-autoreconf \
     ca-certificates git \
     libboost-chrono-dev libboost-filesystem-dev libboost-program-options-dev libboost-system-dev libboost-test-dev libboost-thread-dev libevent-dev \
-    libssl1.0-dev libgmp-dev libsodium-dev libz-dev bsdmainutils curl libsqlite3-dev \
+    libssl-dev libcurl4-openssl-dev libgmp-dev libsodium-dev libz-dev libdb-dev libdb++-dev bsdmainutils curl libsqlite3-dev \
     libtool pkg-config && \
-# 3. install db v4.8
-    apt-get install -y --no-install-recommends software-properties-common && \
-    add-apt-repository ppa:bitcoin/bitcoin && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends libdb4.8-dev libdb4.8++-dev && \
     apt-get install -y --no-install-recommends mc psmisc wget protobuf-compiler libminiupnpc-dev g++ curl cmake bison libevent-dev libboost-dev libxml2-dev python3 flex dumb-init && \
     apt-get clean
 
-FROM baseimage1804 as coinwallet
+FROM baseimage2204 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=5ac15f556e2150c2a23f2b4e45f32fda4de3f9b6
+ARG CURRENT_GITHUB_COMMIT=d081501566247561428b75cdb7712b32f2f0582c
 
 RUN git clone https://github.com/DigiByte-Core/digibyte
 WORKDIR /digibyte
@@ -34,11 +29,12 @@ RUN git checkout $CURRENT_GITHUB_COMMIT
 #COPY docker.patch /tmp/
 #RUN patch -p1 < /tmp/docker.patch
 
-RUN ./autogen.sh && \
-    ./configure --with-gui=no --disable-tests --disable-bench && make clean && make && \
+RUN cd depends && make && cd .. && \
+    ./autogen.sh && \
+    ./configure --prefix `pwd`/depends/x86_64-pc-linux-gnu --with-gui=no --disable-tests --disable-bench --enable-cxx --disable-shared --with-pic CPPFLAGS=-DUSE_UPNP=0 && make clean && make && \
     strip src/digibyted && cp src/digibyted /usr/bin && \
     cd / && rm /digibyte -rf && \
-    rm ~/.cache -rf
+    rm ~/.cache -rf && rm ~/.ccache -rf && rm ~/.cargo -rf
 
 # blocknotify
 COPY blocknotify.cpp /tmp/

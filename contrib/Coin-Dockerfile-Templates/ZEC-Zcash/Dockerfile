@@ -17,7 +17,7 @@ FROM baseimage2204 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=c61e5473ae1fee18ac57e14123d3943323f0f04c
+ARG CURRENT_GITHUB_COMMIT=3c3c6ae85b3e2cbfabb9f10fe22224e4ca040819
 
 RUN git clone https://github.com/zcash/zcash
 WORKDIR /zcash

@@ -1,7 +1,7 @@
 # change image name
 image_name=ycash
 # version tag
-version=v4.4.3
+version=v4.4.4
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 

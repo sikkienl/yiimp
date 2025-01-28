@@ -17,7 +17,7 @@ FROM baseimage2204 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=c1114bbef3c85843fed85ea4a8c1b659ca75620f
+ARG CURRENT_GITHUB_COMMIT=f61996d26229ce8257f4423ec6977eb05f80d30d
 
 RUN git clone https://github.com/osmium-labs/osmium
 WORKDIR /osmium

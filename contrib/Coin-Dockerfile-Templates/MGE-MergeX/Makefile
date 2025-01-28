@@ -1,7 +1,7 @@
 # change image name
-image_name=horizen
+image_name=mergex
 # version tag
-version=v5.0.5
+version=v1.1.0
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 
@@ -12,8 +12,8 @@ STRATUM_UPDATEPASS=tu8tu5
 walletuserid=2000
 walletgroupid=2000
 user_path=/home/walletuser
-wallet_directory=.zen
-wallet_daemon=zend
+wallet_directory=.mergex
+wallet_daemon=mergexd
 
 #change container registry path and credentials
 registry=ghcr.io/<username>
@@ -21,7 +21,7 @@ registry_username=xxx
 registry_password=xxx
 
 gitclone:
-	git clone https://github.com/HorizenOfficial/zen
+	git clone https://github.com/MergeXMGE/MergeX
 
 build:
 	podman build --tag ${image_name} --build-arg STRATUM_UPDATEPASS=${STRATUM_UPDATEPASS} --build-arg walletuserid=${walletuserid} --build-arg walletgroupid=${walletgroupid} -f Dockerfile
@@ -34,6 +34,6 @@ load:
 load-gz:
 	podman load -i ${container_savepath}container-${image_name}-${version}.tar.gz
 run:
-	podman rm -i ${image_name} && podman run --name=${image_name} -dt --network=host --log-driver=journald -v /dev/log:/dev/log -v /home/walletuser/.zcash-params:/home/walletuser/.zcash-params -v ${user_path}/${wallet_directory}:${user_path}/${wallet_directory} ${image_name} ${wallet_daemon} -maxconnections=8
+	podman rm -i ${image_name} && podman run --name=${image_name} -dt --network=host --log-driver=journald -v /dev/log:/dev/log -v ${user_path}/${wallet_directory}:${user_path}/${wallet_directory} ${image_name} ${wallet_daemon} -maxconnections=8
 run-reindex:
-	podman rm -i ${image_name} && podman run --name=${image_name} -dt --network=host --log-driver=journald -v /dev/log:/dev/log -v /home/walletuser/.zcash-params:/home/walletuser/.zcash-params -v ${user_path}/${wallet_directory}:${user_path}/${wallet_directory} ${image_name} ${wallet_daemon} -maxconnections=8 -reindex
+	podman rm -i ${image_name} && podman run --name=${image_name} -dt --network=host --log-driver=journald -v /dev/log:/dev/log -v ${user_path}/${wallet_directory}:${user_path}/${wallet_directory} ${image_name} ${wallet_daemon} -maxconnections=8 -reindex

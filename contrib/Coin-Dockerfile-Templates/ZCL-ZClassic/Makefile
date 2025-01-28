@@ -1,7 +1,7 @@
 # change image name
 image_name=zclassic
 # version tag
-version=v2.1.1.59
+version=v2.1.1.60
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 
