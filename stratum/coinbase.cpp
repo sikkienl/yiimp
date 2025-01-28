@@ -112,8 +112,12 @@ void coinbase_aux(YAAMP_JOB_TEMPLATE *templ, char *aux_script)
 	memset(merkle_hash, 0, 4*1024);
 	string_be(hashlist[0].c_str(), merkle_hash);
 
-	sprintf(aux_script+strlen(aux_script), "fabe6d6d%s%02x00000000000000", merkle_hash, templ->auxs_size);
-//	debuglog("aux_script is %s\n", aux_script);
+	// DASH based aux coins like OSMI use different magic code
+	if (!strcmp(g_stratum_algo, "x11")) {
+		sprintf(aux_script+strlen(aux_script), "4f534d41%s%02x00000000000000", merkle_hash, templ->auxs_size);
+    } else {
+		sprintf(aux_script+strlen(aux_script), "fabe6d6d%s%02x00000000000000", merkle_hash, templ->auxs_size);
+	}
 }
 
 void coinbase_create(YAAMP_COIND *coind, YAAMP_JOB_TEMPLATE *templ, json_value *json_result)
@@ -184,7 +188,7 @@ void coinbase_create(YAAMP_COIND *coind, YAAMP_JOB_TEMPLATE *templ, json_value *
 	char script1[4*1024];
 	sprintf(script1, "%s%s%s08", eheight, templ->flags, etime);
 
-	char script2[32] = "7969696d7000"; // "yiimp\0" in hex ascii //"506f6f6c4d696e652e78797a" -- PoolMine.xyz
+	char script2[32] = "067969696d7000"; // "yiimp\0" in hex ascii //"506f6f6c4d696e652e78797a" -- PoolMine.xyz
 
 	if(!coind->pos && !coind->isaux && templ->auxs_size)
 		coinbase_aux(templ, script2);
