@@ -78,30 +78,44 @@ $payout_freq = (YAAMP_PAYMENTS_FREQ / 3600) . " hours";
 
 		<td>
 			<select id="drop-coin" style="border-style:solid; padding: 3px; font-family: monospace; border-radius: 5px;" onchange="generate()">
-        <?php
-        $list = getdbolist('db_coins', "enable and visible and auto_ready order by algo asc");
+       <?php
+$list = getdbolist('db_coins', "enable and visible and auto_ready order by algo asc");
 
-        $algoheading="";
-        $count=0;
-        foreach($list as $coin)
-        {
-        	$name = substr($coin->name, 0, 18);
-        	$symbol = $coin->getOfficialSymbol();
-                $id = $coin->id;
-                $algo = $coin->algo;
+if (!$list) {
+    echo "<option disabled>No Coins Available</option>";
+} else {
+    $algoheading = "";
+    $count = 0;
 
-        	$port_count = getdbocount('db_stratums', "algo=:algo and symbol=:symbol", array(':algo' => $algo,':symbol' => $coin->symbol));
+    foreach ($list as $coin) {
+        $name = substr($coin->name, 0, 18);
+        $symbol = $coin->getOfficialSymbol();
+        $algo = $coin->algo;
+        $auto_exchange = isset($coin->auto_exchange) ? $coin->auto_exchange : 1; // Default to 1 if null
 
-        	$port_db = getdbosql('db_stratums', "algo=:algo and symbol=:symbol", array(':algo' => $algo,':symbol' => $coin->symbol));
+        $port_db = getdbosql('db_stratums', "algo=:algo and symbol=:symbol", [
+            ':algo' => $algo,
+            ':symbol' => $symbol
+        ]);
 
-       		if ($port_count >= 1){$port = $port_db->port;}else{$port = '0000';}
-       		if($count == 0){ echo "<option disabled=''>$algo";}elseif($algo != $algoheading){echo "<option disabled=''>$algo</option>";}
-        	echo "<option data-port='$port' data-algo='-a $algo' data-symbol='$coin->symbol'>$name ($symbol)</option>";
+        $port = $port_db ? $port_db->port : '0000';
 
-       		$count=$count+1;
-        	$algoheading=$algo;
+        // Add algorithm headings correctly
+        if ($count == 0 || $algo != $algoheading) {
+            echo "<option disabled='disabled'>$algo</option>";
         }
-        ?>
+
+        // Append mc=SYMBOL only if auto_exchange is 0
+        $mc_param = ($auto_exchange == 0) ? ",mc=$symbol" : "";
+
+        echo "<option value='$symbol' data-port='$port' data-algo='-a $algo' data-symbol='$symbol' data-extra='-p c=$symbol$mc_param'>$name ($symbol)</option>";
+
+        $count++;
+        $algoheading = $algo;
+    }
+}
+?>
+
 			</select>
 		</td>
 		<td>
@@ -261,24 +275,30 @@ function getLastUpdated(){
     var stratum = document.getElementById('drop-stratum');
     var coin = document.getElementById('drop-coin');
     var solo = document.getElementById('drop-solo');
-    var wallet = document.getElementById('text-wallet').value;
-    var rigName = document.getElementById('text-rig-name').value;
+    var wallet = document.getElementById('text-wallet').value.trim();
+    var rigName = document.getElementById('text-rig-name').value.trim();
     var result = '';
 
-    result += coin.options[coin.selectedIndex].dataset.algo + ' -o stratum+tcp://';
-    result += stratum.value + '<?=YAAMP_STRATUM_URL?>:';
-    result += coin.options[coin.selectedIndex].dataset.port + ' -u ';
-    if (wallet) result += wallet;
-    else result += 'WALLET_ADDRESS';
-    if (rigName) result += '.' + rigName;
-    else result += '.WORKER_NAME';
-    result += ' -p c=';
-    result += coin.options[coin.selectedIndex].dataset.symbol + solo.value;
+    var algo = coin.options[coin.selectedIndex].dataset.algo;
+    var port = coin.options[coin.selectedIndex].dataset.port;
+    var symbol = coin.options[coin.selectedIndex].dataset.symbol;
+    var extra = coin.options[coin.selectedIndex].dataset.extra; // Already contains "-p c=MTBC,mc=MTBC" if needed
+
+    result += algo + ' -o stratum+tcp://';
+    result += stratum.value + '<?=YAAMP_STRATUM_URL?>:' + port + ' -u ';
+
+    result += wallet ? wallet : 'WALLET_ADDRESS';
+    result += rigName ? '.' + rigName : '.WORKER_NAME';
+
+    result += ' ' + extra; // Removed second "-p"
+    result += solo.value;  // Append solo mining option if selected
+
     return result;
 }
+
 function generate(){
-      var result = getLastUpdated()
-        document.getElementById('output').innerHTML = result;
+    var result = getLastUpdated();
+    document.getElementById('output').innerHTML = result;
 }
 generate();
 </script>
