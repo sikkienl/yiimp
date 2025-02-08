@@ -45,6 +45,7 @@ int g_stratum_max_cons = 5000;
 bool g_stratum_reconnect;
 bool g_stratum_renting;
 bool g_stratum_segwit = false;
+bool g_stratum_mweb = false;
 
 int g_limit_txs_per_block = 0;
 
