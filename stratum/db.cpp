@@ -206,7 +206,7 @@ void db_update_coinds(YAAMP_DB *db)
 	db_query(db, "SELECT id, name, rpchost, rpcport, rpcuser, rpcpasswd, rpcencoding, master_wallet, reward, price, "
 		"hassubmitblock, txmessage, enable, auto_ready, algo, pool_ttf, charity_address, charity_amount, charity_percent, "
 		"reward_mul, symbol, auxpow, actual_ttf, network_ttf, usememorypool, hasmasternodes, algo, symbol2, "
-		"rpccurl, rpcssl, rpccert, account, multialgos, max_miners, max_shares, usesegwit, "
+		"rpccurl, rpcssl, rpccert, account, multialgos, max_miners, max_shares, usesegwit, usemweb, "
 		"auto_exchange, enable_rpcdebug, personalization, powlimit_bits, block_time "
 		"FROM coins WHERE enable AND auto_ready AND algo='%s' ORDER BY index_avg", g_stratum_algo);
 
@@ -336,8 +336,12 @@ void db_update_coinds(YAAMP_DB *db)
 		if (!coind->powlimit_bits) coind->powlimit_bits = 32;
 
 		if(row[40]) coind->blocktime = atoi(row[40]);
+		
+		if(row[41]) coind->usemweb = atoi(row[41]) > 0;		
 
 		if(coind->usesegwit) g_stratum_segwit = true;
+		
+		if(coind->usemweb) g_stratum_mweb = true;
 
 		// force the right rpcencoding for DCR
 		if(!strcmp(coind->symbol, "DCR") && strcmp(coind->rpcencoding, "DCR"))
