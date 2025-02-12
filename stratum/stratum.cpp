@@ -503,23 +503,6 @@ void *monitor_thread(void *p)
 			stratumlogdate("%s dead lock, exiting...\n", g_stratum_algo);
 			exit(1);
 		}
-
-		if(g_max_shares && g_shares_counter) 
-		{
-
-			if((g_shares_counter - g_shares_log) > 10000) 
-			{
-				stratumlogdate("%s %luK shares...\n", g_stratum_algo, (g_shares_counter/1000u));
-				g_shares_log = g_shares_counter;
-			}
-
-			if(g_shares_counter > g_max_shares) 
-			{
-				g_exiting = true;
-				stratumlogdate("%s need a restart (%lu shares), exiting...\n", g_stratum_algo, (unsigned long) g_max_shares);
-				exit(1);
-			}
-		}
 	}
 }
 
