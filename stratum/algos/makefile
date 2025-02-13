@@ -9,7 +9,7 @@ CFLAGS= $(CXXFLAGS) -std=gnu99
 LDFLAGS=-O2 -lgmp
 
 SOURCES=lyra2re.c lyra2v2.c Lyra2.c lyra2z.c lyra2z330.c Lyra2-z.c Sponge.c allium.c SWIFFTX/SWIFFTX.c lyra2vc0ban.c lyra2v3.c \
-	c11.c x11.c x12.c x13.c hsr14.c x14.c x15.c x17.c x17r.c x18.c x11k.c x11kvs.c x22.c xelisv2.c \
+	c11.c x11.c x12.c x13.c hsr14.c x14.c x15.c x17.c x17r.c x18.c x11k.c x11kvs.c x22.c \
 	blake.c blakecoin.c blake2s.c jha.c keccak.c lbry.c tribus.c \
 	deep.c fresh.c groestl.c neoscrypt.c nist5.c quark.c qubit.c skein.c skein2.c bmw512.c \
 	bitcore.c timetravel.c x11evo.c x16r.c x16rv2.c x16s.c xevan.c bastion.c hmq17.c sonoa.c \
@@ -29,7 +29,8 @@ SOURCES=lyra2re.c lyra2v2.c Lyra2.c lyra2z.c lyra2z330.c Lyra2-z.c Sponge.c alli
 	cryptonote/cryptonight_lite.c cryptonote/cryptonight_soft_shell.c cryptonote/cryptonight_turtle.c \
 	cryptonote/cryptonight_turtle_lite.c anime.c aurum.c \
 	equihash.cpp \
-	heavyhash/heavyhash.c heavyhash/keccak_tiny.c cosa.c 0x10.c mike.c sha512_256.c sha3d.c sha256dt.c skydoge.c flex.c
+	heavyhash/heavyhash.c heavyhash/keccak_tiny.c cosa.c 0x10.c mike.c sha512_256.c sha3d.c sha256dt.c skydoge.c flex.c \
+	xelisv2/blake3.c xelisv2/blake3_dispatch.c xelisv2/blake3_portable.c xelisv2/blake3_sse2.c xelisv2/blake3_sse41.c xelisv2/blake3_avx2.c xelisv2/chacha20.c xelisv2/chacha20_dispatch.c xelisv2/chacha20_sse2.c xelisv2.c
 	
 OBJECTS=$(SOURCES:%.c=%.o) $(SOURCES:%.cpp=%.o) $(SOURCES:%.cc=%.o)
 OUTPUT=libalgos.a
@@ -58,3 +59,4 @@ clean:
 	rm -f honeycomb/*.o	
 	rm -f SWIFFTX/*.o	
 	rm -f yespower/*.o	
+	rm -f xelisv2/*.o
