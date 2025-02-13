@@ -179,6 +179,7 @@ void sha3d_hash_hex(const char *input, char *output, unsigned int len);
 #include "algos/x18.h"
 #include "algos/x22i.h"
 #include "algos/xevan.h"
+#include "algos/xelisv2.h"
 #include "algos/hmq17.h"
 #include "algos/nist5.h"
 #include "algos/fresh.h"
