@@ -16,28 +16,32 @@ RUN apt-get update && \
     apt-get update && \
     apt-get install -y --no-install-recommends libdb4.8-dev libdb4.8++-dev && \
     apt-get install -y --no-install-recommends mc psmisc wget protobuf-compiler libminiupnpc-dev g++ curl cmake bison libevent-dev libboost-dev libxml2-dev python3 flex dumb-init && \
+    apt-get install -y --no-install-recommends libseccomp-dev libcap-dev libboost-all-dev && \
     apt-get clean
 
 FROM baseimage1804 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=a1b0f39a4338c58be1e7509423d255c153d7975e
+ARG CURRENT_GITHUB_COMMIT=d8777a3e7e575244ab4a5f794a759fe561e0c90b
 
-RUN git clone https://github.com/ycashfoundation/ycash
-WORKDIR /ycash
+RUN git clone https://github.com/MergeXMGE/MergeX
+WORKDIR /MergeX
 
 # use the specific commit known to work
 RUN git checkout $CURRENT_GITHUB_COMMIT
 
 # apply patch if needed
-#COPY docker.patch /tmp/
-#RUN patch -p1 < /tmp/docker.patch
+COPY docker.patch /tmp/
+RUN patch -p1 < /tmp/docker.patch
 
-RUN ./zcutil/build.sh && \
-    strip src/ycashd && cp src/ycashd /usr/bin && \
-    cd / && rm /ycash -rf && \
-    rm ~/.cache -rf && rm ~/.ccache -rf && rm ~/.cargo -rf
+RUN cd depends && chmod +x * && make && cd .. && \
+    chmod +x autogen.sh && chmod +x share/genbuild.sh && \
+    ./autogen.sh && \
+    ./configure --prefix `pwd`/depends/x86_64-pc-linux-gnu --with-gui=no --disable-tests --disable-bench --with-pic --disable-shared && make clean && make && \
+    strip src/mergexd && cp src/mergexd /usr/bin && \
+    cd / && rm /mergex -rf && \
+    rm ~/.cache -rf
 
 # blocknotify
 COPY blocknotify.cpp /tmp/

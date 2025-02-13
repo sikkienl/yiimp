@@ -1,7 +1,7 @@
 # change image name
 image_name=hootchain
 # version tag
-version=v1.1
+version=v1.2
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 

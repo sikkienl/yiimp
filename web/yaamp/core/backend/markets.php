@@ -51,7 +51,7 @@ function BackendPricesUpdate()
 			$coin->price = $market->price*(1-YAAMP_FEES_EXCHANGE/100);
 			$coin->price2 = $market->price2;
 
-			$base_coin = !empty($market->base_coin)? getdbosql('db_coins', "symbol='{$market->base_coin}'"): null;
+			$base_coin = !is_null($market->base_coin)? getdbosql('db_coins', "symbol='{$market->base_coin}'"): null;
 			if($base_coin)
 			{
 				$coin->price *= $base_coin->price;
@@ -208,20 +208,29 @@ function getBestMarket($coin)
 
 	if (!empty($coin->market)) {
 		// get coin market first (if set)
-		if ($coin->market != 'BEST' && $coin->market != 'unknown')
+		if ($coin->market != 'BEST' && $coin->market != 'unknown') {
 			$market = getdbosql('db_markets', "coinid={$coin->id} AND price!=0 AND NOT deleted AND
 				NOT disabled AND IFNULL(deposit_address,'') != '' AND name=:name",
 				array(':name'=>$coin->market));
-		else
-		// else take one of the big exchanges...
-			$market = getdbosql('db_markets', "coinid={$coin->id} AND price!=0 AND NOT deleted AND
-				NOT disabled AND IFNULL(deposit_address,'') != '' AND
-				name IN ('poloniex') ORDER BY priority DESC, price DESC");
+		}
 	}
 
+	// select best market by btc-price
 	if(!$market) {
-		$market = getdbosql('db_markets', "coinid={$coin->id} AND price!=0 AND NOT deleted AND
-			NOT disabled AND IFNULL(deposit_address,'') != '' ORDER BY priority DESC, price DESC");
+		$best_id = dboscalar("
+				SELECT markets.id,markets.priority,markets.base_coin,
+					CASE markets.base_coin
+			 			WHEN markets.base_coin THEN markets.price * coins.price
+			 			ELSE markets.price
+					END AS marketsprice
+				FROM markets 
+		   		LEFT JOIN coins ON coins.symbol=markets.base_coin
+		   		WHERE markets.coinid={$coin->id} AND markets.price!=0 
+						AND NOT markets.deleted AND NOT markets.disabled
+				ORDER BY markets.priority DESC, marketsprice DESC");
+		if (!empty($best_id)) {
+			$market = getdbosql('db_markets', "id={$best_id}");
+		}
 	}
 
 	if (!$market && empty($coin->market)) {

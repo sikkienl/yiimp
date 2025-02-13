@@ -297,8 +297,11 @@ static void client_do_submit(YAAMP_CLIENT *client, YAAMP_JOB *job, YAAMP_JOB_VAL
 			memset(block_hex, 0, block_size);
 
 			strcat(block_hex, submitvalues->coinbase);		// parent coinbase
-			strcat(block_hex, submitvalues->hash_be);		// parent hash
-
+			// DASH based aux coins like OSMI use different serialized byte stream
+			// todo: needs some fine tuning for old-style coins like UIS on x11
+			if (strcmp(g_stratum_algo, "x11")) {
+				strcat(block_hex, submitvalues->hash_be);		// parent hash
+			}
 			////////////////////////////////////////////////// parent merkle steps
 
 			sprintf(block_hex+strlen(block_hex), "%02x", (unsigned char)templ->txsteps.size());

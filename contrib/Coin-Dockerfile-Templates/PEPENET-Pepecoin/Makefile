@@ -1,7 +1,7 @@
 # change image name
 image_name=pepecoin
 # version tag
-version=v1.0.1
+version=v1.1.0
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 

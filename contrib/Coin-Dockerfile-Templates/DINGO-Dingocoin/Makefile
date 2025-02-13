@@ -1,7 +1,7 @@
 # change image name
 image_name=dingocoin
 # version tag
-version=v1.16.0.9
+version=v1.17.1.1
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 

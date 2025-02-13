@@ -22,7 +22,7 @@ FROM baseimage1804 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=fab486342f21db807f1309305dd924e5f064cd7f
+ARG CURRENT_GITHUB_COMMIT=207cfc6bea58053ae7339ec0f2b48da6e10898a3
 
 RUN git clone https://github.com/dingocoin/dingocoin
 WORKDIR /dingocoin

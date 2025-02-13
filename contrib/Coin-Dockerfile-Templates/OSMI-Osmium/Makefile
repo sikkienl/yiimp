@@ -1,7 +1,7 @@
 # change image name
 image_name=osmium
 # version tag
-version=v1.1.0
+version=v1.2.0
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 

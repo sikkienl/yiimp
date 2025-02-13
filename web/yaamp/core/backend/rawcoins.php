@@ -156,7 +156,7 @@ function updateRawCoinExchange($marketname)
 						$base = strtoupper($tickers['target_currency']);
 						if (strtoupper($base) !== 'BTC'||strtoupper($base) !== 'USDT')
 						$symbol = strtoupper($tickers['base_currency']);
-						updateRawCoin('xeggex', $symbol, $symbol);
+						updateRawCoin('xeggex', $symbol, $symbol, ($base == 'BTC')?null:$base);
 					}
 				}
 			}
@@ -386,7 +386,7 @@ function updateRawCoinExchange($marketname)
 	debuglog("==== END Exchange ====");
 }
 
-function updateRawCoin($marketname, $symbol, $name='unknown')
+function updateRawCoin($marketname, $symbol, $name='unknown', $reference_symbol = null)
 {
 	if($symbol == 'BTC') return;
 
@@ -434,12 +434,19 @@ function updateRawCoin($marketname, $symbol, $name='unknown')
 	$list = getdbolist('db_coins', "symbol=:symbol or symbol2=:symbol", array(':symbol'=>$symbol));
 	foreach($list as $coin)
 	{
-		$market = getdbosql('db_markets', "coinid=$coin->id and name='$marketname'");
+		if (is_null($reference_symbol)) {
+			$sql_filter = "coinid=$coin->id and name LIKE '".$marketname."%' and base_coin is NULL";
+		}
+		else {
+			$sql_filter = "coinid=$coin->id and name LIKE '".$marketname."%' and base_coin ='".$reference_symbol."'";
+		}
+		$market = getdbosql('db_markets', $sql_filter);
 		if(!$market)
 		{
 			$market = new db_markets;
 			$market->coinid = $coin->id;
 			$market->name = $marketname;
+			$market->base_coin = $reference_symbol;
 		}
 
 		$market->deleted = false;

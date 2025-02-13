@@ -1,7 +1,7 @@
 # change image name
 image_name=bitcoin
 # version tag
-version=v28.0
+version=v28.1
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 

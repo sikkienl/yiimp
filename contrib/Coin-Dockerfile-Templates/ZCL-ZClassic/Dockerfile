@@ -22,7 +22,7 @@ FROM baseimage1804 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=c97f4e218a43731e1329c86b772fda46fa7fa0eb
+ARG CURRENT_GITHUB_COMMIT=db5a11ebc8bc4721a46453c27819e05e939d7448
 
 RUN git clone https://github.com/ZclassicCommunity/zclassic
 WORKDIR /zclassic

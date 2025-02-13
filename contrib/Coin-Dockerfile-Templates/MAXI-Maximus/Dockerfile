@@ -17,10 +17,10 @@ FROM baseimage2204 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=2786169a64c4b8fb7b16d818a8b809f298a0c804
+ARG CURRENT_GITHUB_COMMIT=86dfda9b592ebae1fcdf89919f3451d310fb370b
 
-RUN git clone https://github.com/waifu-core/waifu-core
-WORKDIR /waifu-core
+RUN git clone https://github.com/Maximus-Chain/maximus
+WORKDIR /maximus
 
 # use the specific commit known to work
 RUN git checkout $CURRENT_GITHUB_COMMIT
@@ -28,12 +28,13 @@ RUN git checkout $CURRENT_GITHUB_COMMIT
 # apply patch if needed
 #COPY docker.patch /tmp/
 #RUN patch -p1 < /tmp/docker.patch
-COPY /fixes_for_github_repo/ /waifu-core/
 
-RUN ./autogen.sh && \
-    ./configure --with-gui=no --disable-tests --disable-bench --disable-fuzz-binary --with-incompatible-bdb && make clean && make && \
-    strip src/waifud && cp src/waifud /usr/bin && \
-    cd / && rm /waifu-core -rf && \
+RUN cd depends && chmod +x * && make && cd .. && \
+    chmod +x autogen.sh && chmod +x share/genbuild.sh && \
+    ./autogen.sh && \
+    ./configure --prefix `pwd`/depends/x86_64-pc-linux-gnu --with-gui=no --disable-tests --disable-bench --with-pic --disable-shared && make clean && make && \
+    strip src/maximusd && cp src/maximusd /usr/bin && \
+    cd / && rm /maximus -rf && \
     rm ~/.cache -rf
 
 # blocknotify
