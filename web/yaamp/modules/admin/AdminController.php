@@ -105,7 +105,7 @@ class AdminController extends CommonController {
 		{
 			$coin->setAttributes($_POST['db_coins'], false);
 			if($coin->save())
-				$this->redirect(array('admin'));
+				$this->redirect(array('coinwallets'));
 		}
 
 		$this->render('coin_form', array('update'=>false, 'coin'=>$coin));
