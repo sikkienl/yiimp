@@ -243,7 +243,7 @@ YAAMP_ALGO g_algos[] =
 	{"x22i", x22i_hash, 1, 0, 0},
 	{"x25x", x25x_hash, 1, 0, 0},
 	{"xevan", xevan_hash, 0x100, 0, 0},
-	{"xelisv2-pepew", xelisv2_hash, 0x10000, 0, 0},
+	{"xelisv2-pepew", xelisv2_hash, 1, 0, 0},
 	{"yescrypt", yescrypt_hash, 0x10000, 0, 0},
 	{"yescryptR8", yescryptR8_hash, 0x10000, 0, 0 },
 	{"yescryptR16", yescryptR16_hash, 0x10000, 0, 0 },
