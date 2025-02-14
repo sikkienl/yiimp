@@ -59,4 +59,4 @@ clean:
 	rm -f honeycomb/*.o	
 	rm -f SWIFFTX/*.o	
 	rm -f yespower/*.o	
-	rm -f xelisv2/*.o
+	rm -f xelisv2-pepew/*.o
