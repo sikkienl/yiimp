@@ -29,7 +29,8 @@ SOURCES=lyra2re.c lyra2v2.c Lyra2.c lyra2z.c lyra2z330.c Lyra2-z.c Sponge.c alli
 	cryptonote/cryptonight_lite.c cryptonote/cryptonight_soft_shell.c cryptonote/cryptonight_turtle.c \
 	cryptonote/cryptonight_turtle_lite.c anime.c aurum.c \
 	equihash.cpp \
-	heavyhash/heavyhash.c heavyhash/keccak_tiny.c cosa.c 0x10.c mike.c sha512_256.c sha3d.c sha256dt.c skydoge.c flex.c
+	heavyhash/heavyhash.c heavyhash/keccak_tiny.c cosa.c 0x10.c mike.c sha512_256.c sha3d.c sha256dt.c skydoge.c flex.c \
+	xelisv2.c xelisv2/blake3.c xelisv2/blake3_dispatch.c xelisv2/blake3_portable.c xelisv2/chacha20.c xelisv2/chacha20_dispatch.c
 	
 OBJECTS=$(SOURCES:%.c=%.o) $(SOURCES:%.cpp=%.o) $(SOURCES:%.cc=%.o)
 OUTPUT=libalgos.a
@@ -58,3 +59,4 @@ clean:
 	rm -f honeycomb/*.o	
 	rm -f SWIFFTX/*.o	
 	rm -f yespower/*.o	
+	rm -f xelisv2/*.o
