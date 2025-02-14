@@ -5,15 +5,15 @@
 #include <inttypes.h>
 
 
-#include "xelisv2/aes.h"
+#include "xelisv2-pepew/aes.h"
 #include "sha3/sph_blake.h"
 #include "sha3/sph_cubehash.h"
 #include "sha3/sph_shavite.h"
 #include "sha3/sph_simd.h"
 #include "sha3/sph_echo.h"
 #include "sha3/sph_sha2.h"
-#include "xelisv2/blake3.h"
-#include "xelisv2/chacha20.h"
+#include "xelisv2-pepew/blake3.h"
+#include "xelisv2-pepew/chacha20.h"
 #if defined(__x86_64__)
   #include <emmintrin.h>
   #include <immintrin.h>
@@ -390,5 +390,4 @@ int scanhash_xelisv2(int thr_id, struct work *work, uint32_t max_nonce, uint64_t
         pdata[19] = nonce;
         *hashes_done = pdata[19] - first_nonce + 1;
         return 0;
-}
-*/
+}*/
