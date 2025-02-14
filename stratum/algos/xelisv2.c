@@ -4,7 +4,8 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-
+#include "xelisv2-pepew/blake3.h"
+#include "xelisv2-pepew/chacha20.h"
 #include "xelisv2-pepew/aes.h"
 #include "sha3/sph_blake.h"
 #include "sha3/sph_cubehash.h"
@@ -12,8 +13,7 @@
 #include "sha3/sph_simd.h"
 #include "sha3/sph_echo.h"
 #include "sha3/sph_sha2.h"
-#include "xelisv2-pepew/blake3.h"
-#include "xelisv2-pepew/chacha20.h"
+
 #if defined(__x86_64__)
   #include <emmintrin.h>
   #include <immintrin.h>
