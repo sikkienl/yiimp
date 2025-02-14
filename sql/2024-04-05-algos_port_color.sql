@@ -137,3 +137,4 @@ UPDATE `algos` SET `color` = '#e2d0d2', `speedfactor` = 1, `port` = 6238, `visib
 UPDATE `algos` SET `color` = '#e2d0d2', `speedfactor` = 1, `port` = 6243, `visible` = 1 WHERE `name` = 'yespowerTIDE';
 UPDATE `algos` SET `color` = '#e2d0d2', `speedfactor` = 1, `port` = 6239, `visible` = 1 WHERE `name` = 'yespowerURX';
 UPDATE `algos` SET `color` = '#d0b0d0', `speedfactor` = 1, `port` = 5533, `visible` = 1 WHERE `name` = 'zr5';
+UPDATE `algos` SET `color` = '#e2d0d2', `speedfactor` = 1, `port` = 7092, `visible` = 1 WHERE `name` = 'xelisv2-pepew';
