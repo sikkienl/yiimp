@@ -1,1 +1,2 @@
-UPDATE `algos` SET `color` = '#e2d0d2', `speedfactor` = 1, `port` = 8671, `visible` = 1, `powlimit_bits` = NULL WHERE `name` = 'xelisv2-pepew';
+INSERT INTO `algos` (`name`, `color`, `speedfactor`, `port`, `visible`, `powlimit_bits`) VALUES
+('xelisv2-pepew', '#e2d0d2', 1, 7092, 1, NULL);
