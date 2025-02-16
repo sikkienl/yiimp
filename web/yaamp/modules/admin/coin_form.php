@@ -293,6 +293,12 @@ echo CUFHtml::activeCheckBox($coin, 'usesegwit');
 echo '<p class="formHint2"></p>';
 echo CUFHtml::closeCtrlHolder();
 
+echo CUFHtml::openActiveCtrlHolder($coin, 'usemweb');
+echo CUFHtml::activeLabelEx($coin, 'usemweb');
+echo CUFHtml::activeCheckBox($coin, 'usemweb');
+echo '<p class="formHint2"></p>';
+echo CUFHtml::closeCtrlHolder();
+
 echo "</div>";
 
 //////////////////////////////////////////////////////////////////////////////////////////
