@@ -102,6 +102,7 @@ extern int g_stratum_max_ttf;
 extern bool g_stratum_reconnect;
 extern bool g_stratum_renting;
 extern bool g_stratum_segwit;
+extern bool g_stratum_mweb;
 extern int g_limit_txs_per_block;
 
 extern bool g_handle_haproxy_ips;
@@ -189,6 +190,7 @@ void sha3d_hash_hex(const char *input, char *output, unsigned int len);
 #include "algos/x18.h"
 #include "algos/x22i.h"
 #include "algos/xevan.h"
+#include "algos/xelisv2.h"
 #include "algos/hmq17.h"
 #include "algos/nist5.h"
 #include "algos/fresh.h"

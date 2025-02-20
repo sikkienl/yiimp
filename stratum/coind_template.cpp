@@ -260,11 +260,15 @@ YAAMP_JOB_TEMPLATE *coind_create_template(YAAMP_COIND *coind)
 	char params[512] = "[{}]";
 	if(!strcmp(coind->symbol, "PPC")) strcpy(params, "[]");
 	else if(g_stratum_segwit) strcpy(params, "[{\"rules\":[\"segwit\"]}]");
+       
+	coind->usemweb |= g_stratum_mweb;
 
-	// LTC force mweb and segwit
-	if (!strcmp(coind->symbol, "LTC")) {
-		strcpy(params, "[{\"rules\":[\"segwit\",\"mweb\"]}]");
-	}
+       if(coind->usemweb) 
+       {
+       strcpy(params, "[{\"rules\":[\"segwit\",\"mweb\"]}]");
+       debuglog("%s mweb enabled\n", coind->symbol);
+       } 
+
 
 	json_value *json = rpc_call(&coind->rpc, "getblocktemplate", params, coind);
 	if(!json || json_is_null(json))
@@ -299,8 +303,10 @@ YAAMP_JOB_TEMPLATE *coind_create_template(YAAMP_COIND *coind)
 				}
 				coind->usesegwit |= coind->p2wpkh;
 				coind->usesegwit |= g_stratum_segwit;
+				
 				if (coind->usesegwit)
 					debuglog("%s segwit enabled, magic %s\n", coind->symbol, coind->witness_magic);
+
 				break;
 			}
 		}
