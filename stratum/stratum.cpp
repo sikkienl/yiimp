@@ -75,6 +75,7 @@ YAAMP_DB *g_db = NULL;
 
 pthread_mutex_t g_db_mutex;
 pthread_mutex_t g_nonce1_mutex;
+pthread_mutex_t g_context_mutex;
 pthread_mutex_t g_job_create_mutex;
 
 struct ifaddrs *g_ifaddr;
@@ -83,6 +84,9 @@ volatile bool g_exiting = false;
 
 void *stratum_thread(void *p);
 void *monitor_thread(void *p);
+
+bool is_kawpow = false;
+bool is_firopow = false;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -154,6 +158,7 @@ YAAMP_ALGO g_algos[] =
 	{"equihash144", equi_hash, 0x100, 0, 0},
 	{"equihash192", equi_hash, 0x100, 0, 0},
 	{"equihash96", equi_hash, 0x100, 0, 0},
+	{"firopow", sha256_double_hash, 1, 0, 0},
 	{"flex", flex_hash, 1, 0, sha3d_hash_hex},
 	{"fresh", fresh_hash, 0x100, 0, 0},
 	{"geek", geek_hash, 1, 0, 0},
@@ -167,6 +172,7 @@ YAAMP_ALGO g_algos[] =
 	{"hsr", hsr_hash, 1, 0, 0},
 	{"jeonghash", jeonghash_hash, 0x100, 0, 0},
 	{"jha", jha_hash, 0x10000, 0},
+	{"kawpow", sha256_double_hash, 0x100, 0, 0},
 	{"keccak", keccak256_hash, 0x80, 0, sha256_hash_hex },
 	{"keccakc", keccak256_hash, 0x100, 0, 0},
 	{"lbk3", lbk3_hash, 0x100, 0, 0},
@@ -366,6 +372,12 @@ int main(int argc, char **argv)
 	if(!g_current_algo) yaamp_error("invalid algo");
 	if(!g_current_algo->hash_function) yaamp_error("no hash function");
 
+	if (!strcmp(g_current_algo->name,"kawpow")) {
+		is_kawpow = true;
+	} else if (!strcmp(g_current_algo->name,"firopow")) {
+		is_firopow = true;
+	}
+
 //	struct rlimit rlim_files = {0x10000, 0x10000};
 //	setrlimit(RLIMIT_NOFILE, &rlim_files);
 
@@ -408,6 +420,7 @@ int main(int argc, char **argv)
 
 	yaamp_create_mutex(&g_db_mutex);
 	yaamp_create_mutex(&g_nonce1_mutex);
+	yaamp_create_mutex(&g_context_mutex);
 	yaamp_create_mutex(&g_job_create_mutex);
 
 	YAAMP_DB *db = db_connect();

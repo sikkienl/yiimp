@@ -497,15 +497,6 @@ void client_submit_error(YAAMP_CLIENT *client, YAAMP_JOB *job, int id, const cha
 	object_unlock(job);
 }
 
-static bool valid_string_params(json_value *json_params)
-{
-	for(int p=0; p < json_params->u.array.length; p++) {
-		if (!json_is_string(json_params->u.array.values[p]))
-			return false;
-	}
-	return true;
-}
-
 bool client_submit(YAAMP_CLIENT *client, json_value *json_params)
 {
 	// submit(worker_name, jobid, extranonce2, ntime, nonce):
