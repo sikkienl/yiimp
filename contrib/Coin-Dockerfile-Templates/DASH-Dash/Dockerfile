@@ -17,7 +17,7 @@ FROM baseimage2204 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=7f28292b5e0b0a04fe2a4c1ff348fdba2fb03734
+ARG CURRENT_GITHUB_COMMIT=0f6239140ae74925d1178e06000bacd15d5f23d0
 
 RUN git clone https://github.com/dashpay/dash
 WORKDIR /dash

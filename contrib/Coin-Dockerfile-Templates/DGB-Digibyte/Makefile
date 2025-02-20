@@ -1,7 +1,7 @@
 # change image name
 image_name=digibyte
 # version tag
-version=v8.22.0-final
+version=v8.22.1
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 

@@ -1,7 +1,7 @@
 # change image name
-image_name=dash
+image_name=blobfish
 # version tag
-version=v22.1.1
+version=v2.1.0
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 
@@ -12,8 +12,8 @@ STRATUM_UPDATEPASS=tu8tu5
 walletuserid=2000
 walletgroupid=2000
 user_path=/home/walletuser
-wallet_directory=.dashcore
-wallet_daemon=dashd
+wallet_directory=.blobfish
+wallet_daemon=blobfishd
 
 #change container registry path and credentials
 registry=ghcr.io/<username>
@@ -21,7 +21,7 @@ registry_username=xxx
 registry_password=xxx
 
 gitclone:
-	git clone https://github.com/dashpay/dash
+	git clone https://github.com/BFCD/blobfish
 
 build:
 	podman build --tag ${image_name} --build-arg STRATUM_UPDATEPASS=${STRATUM_UPDATEPASS} --build-arg walletuserid=${walletuserid} --build-arg walletgroupid=${walletgroupid} -f Dockerfile
