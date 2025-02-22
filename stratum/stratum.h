@@ -30,6 +30,8 @@ using namespace std;
 #include "iniparser/src/iniparser.h"
 
 #include "json.h"
+#include "utilstrencodings.h"
+#include "uint256.h"
 #include "util.h"
 
 #define YAAMP_RESTARTDELAY		(24*60*60)
@@ -68,6 +70,9 @@ extern CommonList g_list_worker;
 extern CommonList g_list_block;
 extern CommonList g_list_submit;
 extern CommonList g_list_source;
+
+extern bool is_kawpow;
+extern bool is_firopow;
 
 extern int g_tcp_port;
 
@@ -124,6 +129,7 @@ extern struct ifaddrs *g_ifaddr;
 
 extern pthread_mutex_t g_db_mutex;
 extern pthread_mutex_t g_nonce1_mutex;
+extern pthread_mutex_t g_context_mutex;
 extern pthread_mutex_t g_job_create_mutex;
 
 extern volatile bool g_exiting;
@@ -131,12 +137,16 @@ extern volatile bool g_exiting;
 #include "db.h"
 #include "object.h"
 #include "socket.h"
+#include "job.h"
 #include "client.h"
 #include "rpc.h"
-#include "job.h"
 #include "coind.h"
 #include "remote.h"
 #include "share.h"
+#include "kawpow/hash.h"
+#include "kawpow/kawpow.h"
+#include "firopow/hash.h"
+#include "firopow/overrides.h"
 
 extern YAAMP_DB *g_db;
 extern YAAMP_ALGO g_algos[];

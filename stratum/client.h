@@ -108,6 +108,10 @@ public:
 	int donation;
 	int broadcast_timeouts;
 
+	//////////////////////////////////////////////////
+	uint256 share_target;
+	uint256 next_target;
+	
 	bool solo;
 };
 
@@ -165,6 +169,7 @@ int client_send_error(YAAMP_CLIENT *client, int error, const char *string);
 bool client_ask_stats(YAAMP_CLIENT *client);
 
 bool client_submit(YAAMP_CLIENT *client, json_value *json_params);
+void client_submit_error(YAAMP_CLIENT *client, YAAMP_JOB *job, int id, const char *message, char *extranonce2, char *ntime, char *nonce);
 
 int client_workers_count(YAAMP_CLIENT *client);
 int client_workers_byaddress(const char *username);

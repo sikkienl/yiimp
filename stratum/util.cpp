@@ -882,6 +882,36 @@ void string_upper(char *s)
 	  s[i] = toupper(s[i]);
 }
 
+bool valid_string_params(json_value *json_params)
+{
+        for(int p=0; p < json_params->u.array.length; p++) {
+                if (!json_is_string(json_params->u.array.values[p]))
+                        return false;
+        }
+        return true;
+}
+
+void decode_nbits(uint256& target_, unsigned int nbits)
+{
+    unsigned char target[32];
+    memset(target, 0, sizeof(target));
+
+    unsigned int exp = nbits >> 24;
+    unsigned int mant = nbits & 0xffffff;
+
+    unsigned int shift = 8 * (exp - 3);
+    unsigned int sb = shift / 8;
+    unsigned int rb = shift % 8;
+
+    // little-endian
+    target[sb] = (mant << rb);
+    target[sb + 1] = (mant >> (8-rb));
+    target[sb + 2] = (mant >> (16-rb));
+    target[sb + 3] = (mant >> (24-rb));
+
+    memcpy(&target_, target, 32);
+}
+
 int string_tokenize(std::string const &input_string, const char delimiter, std::vector<std::string> &string_array) {
     size_t start;
     size_t end = 0;
@@ -946,6 +976,10 @@ void sha256_hash_hex(const char *input, char *output, unsigned int len)
 
 	sha256_hash(input, output1, len);
 	hexlify(output, (unsigned char *)output1, 32);
+}
+
+unsigned char *SHA256(const unsigned char *d, size_t n, unsigned char *md) {
+	sha256_hash((const char *)d, (char *)md, n);
 }
 
 void sha3d_hash_hex(const char *input, char *output, unsigned int len)

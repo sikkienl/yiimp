@@ -126,6 +126,9 @@ int string_tokenize(std::string const &input_string, const char delimiter, std::
 
 int getblocheight(const char *coinb1);
 
+bool valid_string_params(json_value *json_params);
+void decode_nbits(uint256& target_, unsigned int nbits);
+
 //////////////////////////////////////////////////////////////////////////
 
 #ifndef max
@@ -152,3 +155,5 @@ static inline uint32_t bswap32(uint32_t x) {
 }
 
 uint64_t share_to_target(double diff);
+
+unsigned char *SHA256(const unsigned char *d, size_t n, unsigned char *md);

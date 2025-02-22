@@ -474,6 +474,7 @@ bool dump_submit_debug(const char *title, YAAMP_CLIENT *client, YAAMP_JOB *job, 
 	debuglog("ERROR %s, %s subs %d, job %x, %s, id %x, %d, %s, %s %s\n",
 		title, client->sock->ip, client->extranonce_subscribe, job? job->id: 0, client->extranonce1,
 		client->extranonce1_id, client->extranonce2size, extranonce2, ntime, nonce);
+	return true;
 }
 
 void client_submit_error(YAAMP_CLIENT *client, YAAMP_JOB *job, int id, const char *message, char *extranonce2, char *ntime, char *nonce)
@@ -494,15 +495,6 @@ void client_submit_error(YAAMP_CLIENT *client, YAAMP_JOB *job, int id, const cha
 	}
 
 	object_unlock(job);
-}
-
-static bool valid_string_params(json_value *json_params)
-{
-	for(int p=0; p < json_params->u.array.length; p++) {
-		if (!json_is_string(json_params->u.array.values[p]))
-			return false;
-	}
-	return true;
 }
 
 bool client_submit(YAAMP_CLIENT *client, json_value *json_params)

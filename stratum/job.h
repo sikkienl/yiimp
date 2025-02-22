@@ -90,7 +90,12 @@ struct YAAMP_JOB_TEMPLATE
 	YAAMP_COIND_AUX *auxs[MAX_AUXS * 32];
 	
 	bool needpriceinfo;
-	char priceinfo[1024];	
+	char priceinfo[1024];
+
+	//////////////////////////////////////////////////
+	uint256 header_hash;
+	uint256 header_seed;
+	//////////////////////////////////////////////////
 };
 
 #define YAAMP_JOB_MAXSUBIDS		200

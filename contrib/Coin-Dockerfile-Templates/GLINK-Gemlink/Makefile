@@ -1,7 +1,7 @@
 # change image name
 image_name=gemlink
 # version tag
-version=v4.2.2.51
+version=v4.3.1
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 
