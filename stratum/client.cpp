@@ -25,7 +25,10 @@ bool client_suggest_target(YAAMP_CLIENT *client, json_value *json_params)
 bool client_subscribe(YAAMP_CLIENT *client, json_value *json_params)
 {
 	//if(client_find_my_ip(client->sock->ip)) return false;
-	get_next_extraonce1(client->extranonce1_default);
+	if (is_kawpow || is_firopow)
+		get_nonce_prefix(client->extranonce1_default);
+	else
+		get_next_extraonce1(client->extranonce1_default);
 
 	if(!strcmp(g_stratum_algo,"neoscrypt-xaya")) client->extranonce2size_default = 2;
 	else client->extranonce2size_default = YAAMP_EXTRANONCE2_SIZE;
@@ -122,7 +125,10 @@ bool client_subscribe(YAAMP_CLIENT *client, json_value *json_params)
 		debuglog("new client with nonce %s\n", client->extranonce1);
 	}
 
-	if (strstr(g_current_algo->name, "equihash") == g_current_algo->name) {
+	if (is_kawpow || is_firopow) {
+		kawpow_send_nonceprefix(client);
+	}
+	else if (strstr(g_current_algo->name, "equihash") == g_current_algo->name) {
 		// send extranonce
 		client_send_result(	client, "[null,\"%s\"]",client->extranonce1);
 	}
@@ -647,6 +653,11 @@ void *client_thread(void *p)
 		{
 			clientlog(client, "using getwork"); // client using http:// url
 		}
+		else if(!strcmp(method, "eth_submitHashrate"))
+		{
+			b = client_send_result(client, "true"); // skip eth_submitHashrate method
+		}
+
 		else
 		{
 			b = client_send_error(client, 20, "Not supported");

@@ -32,6 +32,7 @@ using namespace std;
 #include "json.h"
 #include "utilstrencodings.h"
 #include "uint256.h"
+#include "arith_uint256.h"
 #include "util.h"
 
 #define YAAMP_RESTARTDELAY		(24*60*60)
@@ -53,6 +54,7 @@ typedef void (*YAAMP_HASH_FUNCTION)(const char *, char *, uint32_t);
 #define YAAMP_SMALLBUFSIZE		(32*1024)
 
 #define YAAMP_NONCE_SIZE		4
+#define YAAMP_KAWPOW_NONCE_SIZE	8
 #define YAAMP_RES_NONCE_SIZE	(32 - YAAMP_NONCE_SIZE)
 #define YAAMP_EQUIHASH_NONCE_SIZE   28
 #define YAAMP_EXTRANONCE2_SIZE	4

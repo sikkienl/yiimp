@@ -14,6 +14,10 @@
 #include "sha3/sph_echo.h"
 #include "sha3/sph_sha2.h"
 
+#if defined(NO_AES_NI)
+	#undef __x86_64__
+#endif
+
 #if defined(__x86_64__)
   #include <emmintrin.h>
   #include <immintrin.h>

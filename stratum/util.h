@@ -104,9 +104,12 @@ uint64_t decode_compact(const char *input, int shiftdiff = 19);
 uint64_t sharetotarg(double diff);
 
 uint64_t diff_to_target(double difficulty);
+void diff_to_target(uint32_t *target, double diff);
+void diff_to_target(uint256& target, double diff);
 uint64_t diff_to_target_coin(double difficulty, int powlimit_bits);
 void diff_to_target_equi(uint32_t* target, double diff);
 double target_to_diff(uint64_t target);
+double target_to_diff(uint256& target);
 double target_to_diff_coin(uint64_t target, int powlimit_bits);
 
 uint64_t get_hash_difficulty(unsigned char *input);

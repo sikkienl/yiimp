@@ -579,6 +579,28 @@ uint64_t diff_to_target(double difficulty)
 	return t;
 }
 
+void diff_to_target(uint32_t *target, double diff)
+{
+        uint64_t m;
+        int k;
+
+        for (k = 6; k > 0 && diff > 1.0; k--)
+                diff /= 4294967296.0;
+        m = (uint64_t)(4294901760.0 / diff);
+        if (m == 0 && k == 6)
+                memset(target, 0xff, 32);
+        else {
+                memset(target, 0, 32);
+                target[k] = (uint32_t)m;
+                target[k + 1] = (uint32_t)(m >> 32);
+        }
+}
+
+void diff_to_target(uint256& target, double diff)
+{
+        diff_to_target((uint32_t*)&target, diff);
+}
+
 uint64_t diff_to_target_coin(double difficulty, int powlimit_bits) {
 
 	uint64_t powlimit = (0xffffffffffffffff >> (powlimit_bits));
@@ -594,6 +616,16 @@ double target_to_diff(uint64_t target)
 
 	double d = (double)0x0000ffff00000000/target;
 	return d;
+}
+
+double target_to_diff(uint256& target)
+{
+	if(target.IsNull()) return 0;
+
+	arith_uint256 base_hash;
+	base_hash.SetHex("00000000ffff0000000000000000000000000000000000000000000000000000");
+
+	return ( base_hash.getdouble() / UintToArith256(target).getdouble() );
 }
 
 void diff_to_target_equi(uint32_t* target, double diff) {

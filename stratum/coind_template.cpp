@@ -257,7 +257,19 @@ YAAMP_JOB_TEMPLATE *coind_create_template(YAAMP_COIND *coind)
 	if(coind->usememorypool)
 		return coind_create_template_memorypool(coind);
 
-	char params[512] = "[{}]";
+	char params[512];
+	memset(params, 0, sizeof(params));
+
+	if (is_firopow) {
+		sprintf(params, "[{\"mode\":\"template\"},\"%s\"]", coind->wallet);
+	}
+	else if (is_kawpow) {
+		sprintf(params, "[]");
+	}
+	else {
+		strcpy(params, "[{}]");
+	}
+
 	if(!strcmp(coind->symbol, "PPC")) strcpy(params, "[]");
 	else if(g_stratum_segwit) strcpy(params, "[{\"rules\":[\"segwit\"]}]");
        
@@ -373,6 +385,16 @@ YAAMP_JOB_TEMPLATE *coind_create_template(YAAMP_COIND *coind)
 	strcpy(templ->flags, flags ? flags : "");
 	strcpy(templ->priceinfo, "");
 
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+	if (is_firopow) {
+		templ->header_hash = uint256();
+		const char *pprpcheader = json_get_string(json_result, "pprpcheader");
+		templ->header_hash = uint256S(json_get_string(json_result, "pprpcheader"));
+	}
+	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	// disable coin on next template on gbt-flag
 	coind->mining_disabled = json_get_bool(json_result, "mining_disabled");
 
@@ -610,6 +632,14 @@ YAAMP_JOB_TEMPLATE *coind_create_template(YAAMP_COIND *coind)
 
 	string merkleroot = merkle_with_first(templ->txsteps, doublehash);
 	strcpy(templ->merkleroot, merkleroot.c_str());
+
+	if (is_kawpow || is_firopow) {
+		update_epoch(coind->id, templ->height);
+		templ->header_seed = get_kawpow_seed(templ->height);
+		if (is_kawpow) {
+			templ->header_hash = build_header_hash(templ);
+		}
+	}
 
 	return templ;
 }

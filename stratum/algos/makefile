@@ -4,7 +4,7 @@ CC=gcc -g -ggdb
 #CFLAGS=-c -g -I /usr/include/mysql
 #LDFLAGS=-g
 
-CXXFLAGS = -O2 -I.. -march=native
+CXXFLAGS = -O2 -I.. -march=native -DNO_AES_NI
 CFLAGS= $(CXXFLAGS) -std=gnu99
 LDFLAGS=-O2 -lgmp
 

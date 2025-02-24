@@ -499,6 +499,10 @@ void client_submit_error(YAAMP_CLIENT *client, YAAMP_JOB *job, int id, const cha
 
 bool client_submit(YAAMP_CLIENT *client, json_value *json_params)
 {
+	// simple backport, will need some rework
+	if (is_kawpow || is_firopow) {
+		return kawpow_submit(client, json_params);
+	}
 	// submit(worker_name, jobid, extranonce2, ntime, nonce):
 	if(json_params->u.array.length<5 || !valid_string_params(json_params)) {
 		debuglog("%s - %s bad message\n", client->username, client->sock->ip);

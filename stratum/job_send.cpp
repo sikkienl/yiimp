@@ -122,7 +122,12 @@ void job_send_last(YAAMP_CLIENT *client)
 	client->jobid_sent = job->id;
 
 	char buffer[YAAMP_SMALLBUFSIZE];
-	job_mining_notify_buffer(job, buffer);
+	if (is_kawpow || is_firopow) {
+		kawpow_job_mining_notify_buffer(job, client, buffer);
+	}
+	else {
+		job_mining_notify_buffer(job, buffer);
+	}
 
 	socket_send_raw(client->sock, buffer, strlen(buffer));
 }
@@ -137,7 +142,12 @@ void job_send_jobid(YAAMP_CLIENT *client, int jobid)
 	}
 
 	char buffer[YAAMP_SMALLBUFSIZE];
-	job_mining_notify_buffer(job, buffer);
+	if (is_kawpow || is_firopow) {
+		kawpow_job_mining_notify_buffer(job, client, buffer);
+	}
+	else {
+		job_mining_notify_buffer(job, buffer);
+	}
 
 	YAAMP_JOB_TEMPLATE *templ = job->templ;
 	client->jobid_sent = job->id;
@@ -160,9 +170,6 @@ void job_broadcast(YAAMP_JOB *job)
 
 	YAAMP_JOB_TEMPLATE *templ = job->templ;
 
-	char buffer[YAAMP_SMALLBUFSIZE];
-	job_mining_notify_buffer(job, buffer);
-
 	g_list_client.Enter();
 	for(CLI li = g_list_client.first; li; li = li->next)
 	{
@@ -174,6 +181,15 @@ void job_broadcast(YAAMP_JOB *job)
 		if(client->jobid_next != job->id) continue;
 		if(client->jobid_sent == job->id) continue;
 
+		char buffer[YAAMP_SMALLBUFSIZE];
+		memset(buffer, 0, sizeof(buffer));
+		if (is_kawpow || is_firopow) {
+			kawpow_job_mining_notify_buffer(job, client, buffer);
+		}
+		else {
+			job_mining_notify_buffer(job, buffer);
+		}
+	
 		client->jobid_sent = job->id;
 		client_add_job_history(client, job->id);
 
