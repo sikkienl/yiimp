@@ -73,8 +73,6 @@ define('YIIMP_MYSQLDUMP_PASS', '<my_mysql_password>');
  *
  * access tokens required to create/cancel orders and access your balances/deposit addresses
  */
-define('EXCH_ALTMARKETS_KEY', '');
-
 define('EXCH_BINANCE_KEY', '');
 define('EXCH_BINANCE_SECRET', '');
 

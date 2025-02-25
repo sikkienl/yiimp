@@ -78,9 +78,6 @@ function BackendPricesUpdateExchange($exchangename)
 		case 'safetrade':
 			updateSafeTradeMarkets();
 		break;
-		case 'altmarkets':
-			updateAltMarketsMarkets();
-		break;
 		case 'exbitron':
 			updateExbitronMarkets();
 		break;
@@ -95,9 +92,6 @@ function BackendPricesUpdateExchange($exchangename)
 		break;
 		case 'tradeogre':
 			updateTradeOgreMarkets();
-		break;
-		case 'escodex':
-			updateEscoDexMarkets();
 		break;
 		case 'binance':
 			updateBinanceMarkets();
@@ -311,74 +305,6 @@ function updateSafeTradeMarkets() {
 		$market->priority = -1; // not ready for trading
 		$market->txfee = 0.2;
 		//debuglog("$exchange: $symbol price set to ".bitcoinvaluetoa($market->price));
-		$market->pricetime = time(); // $m->updated_time;
-		$market->save();
-		if (!empty($market->price2))
-		{
-			if ((empty($coin->price2))||($coin->price2==0)) {
-				$coin->price = $market->price;
-				$coin->price2 = $market->price2;
-				$coin->save();
-			}
-		}
-	}
-}
-
-function updateAltMarketsMarkets() {
-	debuglog(__FUNCTION__);
-	
-	$exchange = 'altmarkets';
-	debuglog ("====== $exchange =======");
-	if (exchange_get($exchange, 'disabled')) return;
-	$list = altmarkets_api_query('markets');
-	if(empty($list) || !is_array($list)) return;
-	// debuglog(json_encode($list));
-	$tickers = altmarkets_api_query('markets/tickers');
-	foreach($list as $data) {
-		$e = explode('/', $data->name);
-		$symbol = strtoupper($e[0]); $base = strtoupper($e[1]);
-		if($base != 'BTC') continue;
-		// debuglog("$symbol : $base");
-		$id = $data->id;
-
-		$coin = getdbosql('db_coins', "symbol=:sym", array(':sym'=>$symbol));
-		if(!$coin) continue;
-		$market = getdbosql('db_markets', "coinid={$coin->id} AND name='$exchange' AND IFNULL(base_coin,'') IN ('','BTC')");
-		$symbol = $coin->getOfficialSymbol();
-		if(!$market)
-		{
-			//debuglog ("$symbol not found in db");
-			$market = new db_markets;
-			$market->coinid = $coin->id;
-			$market->disabled = 0;
-			$market->deleted = 0;
-			$market->name = $exchange;
-			//continue;	
-		}
-		else
-		{
-			//debuglog ("$symbol found in db");
-			$symbol = $coin->getOfficialSymbol();
-			if (market_get($exchange, $symbol, "disabled")) {
-				$market->disabled = 1;
-				$market->message = 'disabled from settings';
-				$market->save();
-				continue;
-			}
-		}
-		$ticker = $tickers->$id;
-		// debuglog(json_encode($ticker));
-		$data = $ticker->ticker;
-		$bid = bitcoinvaluetoa($data->low);
-		$ask = bitcoinvaluetoa($data->high);
-		$market->disabled = ($bid == 0);
-		$price2 = ((double)$ask + (double)$bid)/2;
-
-		$market->price2 = AverageIncrement($market->price2, $price2);
-		$market->price = AverageIncrement($market->price, (double)$bid);
-		$market->priority = -1; // not ready for trading
-		$market->txfee = 0.2;
-		// debuglog("$exchange: $symbol price set to ".bitcoinvaluetoa($market->price));
 		$market->pricetime = time(); // $m->updated_time;
 		$market->save();
 		if (!empty($market->price2))
@@ -765,51 +691,6 @@ function updateBiboxMarkets($force = false)
 	}
 }
 
- /////////////////////////////////////////////////////////////////////////////////////////////
-
-function updateEscoDexMarkets($force = false)
-{
-	$exchange = 'escodex';
-	if (exchange_get($exchange, 'disabled')) return;
-
-	$count = (int) dboscalar("SELECT count(id) FROM markets WHERE name LIKE '$exchange%'");
-	if ($count == 0) return;
-	$result = escodex_api_query('ticker');
-	if(!is_array($result)) return;
-	foreach($result as $ticker)
-	{
-		if (is_null(objSafeVal($ticker,'id'))) continue;
-		#$pairs = explode('_', $ticker->id);
-		$symbol = $ticker->quote; $base = $ticker->base;
-		if($symbol == 'BTC' || $base != 'BTC') continue;
-		if (market_get($exchange, $symbol, "disabled")) {
-			$market->disabled = 1;
-			$market->message = 'disabled from settings';
-		}
-
-		$coin = getdbosql('db_coins', "symbol='{$symbol}'");
-		if(!$coin) continue;
-		if(!$coin->installed && !$coin->watch) continue;
-		$market = getdbosql('db_markets', "coinid={$coin->id} and name='{$exchange}'");
-		if(!$market) continue;
-
-		$price2 = ($ticker->highest_bid + $ticker->lowest_ask)/2;
-		$market->price2 = AverageIncrement($market->price2, $price2);
-		$market->price = AverageIncrement($market->price, $ticker->highest_bid);
-		$market->pricetime = time();
-		$market->priority = -1;
-		$market->txfee = 0.2; // trade pct
-		$market->save();
-		//debuglog("$exchange: update $symbol: {$market->price} {$market->price2}");
-		if ((empty($coin->price))||(empty($coin->price2))) {
-			$coin->price = $market->price;
-			$coin->price2 = $market->price2;
-			$coin->market = $exchange;
-			$coin->save();
-		}
-	}
-}
-
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 function updateGateioMarkets($force = false)
@@ -1098,54 +979,6 @@ function updateYobitMarkets()
 			}
 			cache()->set($exchange.'-deposit_address-check-'.$symbol, time(), 24*3600);
 		}
-	}
-}
-
-// http://www.jubi.com/ ?
-function updateJubiMarkets()
-{
-	$exchange = 'jubi';
-	if (exchange_get($exchange, 'disabled')) return;
-
-	$list = getdbolist('db_markets', "name LIKE '$exchange%'");
-	if (empty($list)) return;
-
-	$btc = jubi_api_query('ticker', "?coin=btc");
-	if(!is_object($btc)) return;
-
-	foreach($list as $market)
-	{
-		$coin = getdbo('db_coins', $market->coinid);
-		if(!$coin) continue;
-
-		$symbol = $coin->getOfficialSymbol();
-		if (market_get($exchange, $symbol, "disabled")) {
-			$market->disabled = 1;
-			$market->message = 'disabled from settings';
-			$market->save();
-			continue;
-		}
-
-		$ticker = jubi_api_query('ticker', "?coin=".strtolower($symbol));
-		if(!$ticker || !is_object($ticker)) continue;
-		if(objSafeVal($ticker,'buy') === NULL) {
-			debuglog("$exchange: invalid data received for $symbol ticker");
-			continue;
-		}
-
-		if (isset($btc->sell) && $btc->sell != 0.)
-			$ticker->buy /= $btc->sell;
-		if (isset($btc->buy) && $btc->buy != 0.)
-			$ticker->sell /= $btc->buy;
-
-		$price2 = ($ticker->buy+$ticker->sell)/2;
-		$market->price2 = AverageIncrement($market->price2, $price2);
-		$market->price = AverageIncrement($market->price, $ticker->buy*0.95);
-		$market->pricetime = time();
-
-//		debuglog("jubi update $symbol: $market->price $market->price2");
-
-		$market->save();
 	}
 }
 

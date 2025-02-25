@@ -13,17 +13,14 @@ function strip_data($data)
 	return $out;
 }
 
-require_once("altmarkets.php");
 require_once("bitstamp.php");
 require_once("cexio.php");
 require_once("exbitron.php");
-require_once("escodex.php");
 require_once("gateio.php");
 require_once("kraken.php");
 require_once("poloniex.php");
 require_once("yobit.php");
 require_once("shapeshift.php");
-require_once("jubi.php");
 require_once("binance.php");
 require_once("hitbtc.php");
 require_once("kucoin.php");
@@ -31,7 +28,6 @@ require_once("xeggex.php");
 require_once("nonkyc.php");
 require_once("tradeogre.php");
 require_once("safetrade.php");
-require_once("swiftex.php");
 require_once("bibox.php");
 
 
@@ -58,9 +54,7 @@ function getMarketUrl($coin, $marketName)
 
 	$lowbase = strtolower($base);
 
-	if($market == 'altmarkets')
-		$url = "https://v2.altmarkets.io/trading/{$lowsymbol}{$lowbase}";
-	else if($market == 'bibox')
+	if($market == 'bibox')
 		$url = "https://www.bibox.com/exchange?coinPair={$symbol}_{$base}";
 	else if($market == 'binance')
 		$url = "https://www.binance.com/trade.html?symbol={$symbol}_{$base}";
@@ -70,12 +64,8 @@ function getMarketUrl($coin, $marketName)
 		$url = "https://cex.io/trade/{$symbol}-{$base}";
 	else if($market == 'exbitron')
 		$url = "https://www.exbitron.com/trading/{$lowsymbol}{$lowbase}";
-	else if($market == 'escodex')
-		$url = "https://wallet.escodex.com/market/ESCODEX.{$symbol}_ESCODEX.{$base}";
 	else if($market == 'gateio')
 		$url = "https://gate.io/trade/{$symbol}_{$base}";
-	else if($market == 'jubi')
-		$url = "http://jubi.com/coin/{$lowsymbol}";
 	else if($market == 'hitbtc')
 		$url = "https://hitbtc.com/exchange/{$symbol}-to-{$base}";
 	else if($market == 'kucoin')
@@ -88,8 +78,6 @@ function getMarketUrl($coin, $marketName)
 		$url = "https://tradeogre.com/exchange/{$base}-{$symbol}";
 	else if($market == 'yobit')
 		$url = "https://yobit.net/en/trade/{$symbol}/{$base}";
-	else if($market == 'swiftex')
-		$url = "https://swiftex.co/trading/{$lowsymbol}-{$lowbase}";	
 	else if($market == 'safetrade')
 		$url = "https://safetrade.com/exchange/{$lowsymbol}-{$lowbase}";	
 	else

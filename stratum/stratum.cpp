@@ -172,7 +172,7 @@ YAAMP_ALGO g_algos[] =
 	{"hsr", hsr_hash, 1, 0, 0},
 	{"jeonghash", jeonghash_hash, 0x100, 0, 0},
 	{"jha", jha_hash, 0x10000, 0},
-	{"kawpow", sha256_double_hash, 0x100, 0, 0},
+	{"kawpow", sha256_double_hash, 1, 0, 0},
 	{"keccak", keccak256_hash, 0x80, 0, sha256_hash_hex },
 	{"keccakc", keccak256_hash, 0x100, 0, 0},
 	{"lbk3", lbk3_hash, 0x100, 0, 0},

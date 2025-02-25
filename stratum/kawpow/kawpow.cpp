@@ -158,7 +158,7 @@ uint256 build_header_hash(YAAMP_JOB_TEMPLATE* templ)
     return header_hash;
 }
 
-void kawpow_block(YAAMP_CLIENT* client, YAAMP_JOB* job, YAAMP_JOB_TEMPLATE *templ, const char* nonce64, const char* mixhash)
+void kawpow_block(YAAMP_CLIENT* client, YAAMP_JOB* job, YAAMP_JOB_TEMPLATE *templ, const char* nonce64, const char* mixhash, uint256& blockhash)
 {
     if (!templ) {
        debuglog("lost pointer to *templ\n");
@@ -209,6 +209,15 @@ void kawpow_block(YAAMP_CLIENT* client, YAAMP_JOB* job, YAAMP_JOB_TEMPLATE *temp
             debuglog("*** ACCEPTED %s %d by %s (id: %d)\n", coind->name, templ->height,
                 client->sock->ip, client->userid);
             job->block_found = true;
+
+            double coin_diff = target_to_diff( decode_compact(templ->nbits, 25) );
+
+            block_add(client->userid, client->workerid, coind->id, templ->height,
+				coin_diff , target_to_diff(blockhash) ,
+				blockhash.ToString().c_str(), blockhash.ToString().c_str(), templ->has_segwit_txs, client->solo);
+            if(!strcmp(coind->lastnotifyhash, blockhash.ToString().c_str())) {
+                block_confirm(coind->id, blockhash.ToString().c_str());
+            }
         } else {
             debuglog("*** REJECTED :( %s block %d %d txs\n", coind->name, templ->height, templ->txcount);
             rejectlog("REJECTED %s block %d\n", coind->symbol, templ->height);
@@ -267,7 +276,7 @@ bool kawpow_submit(YAAMP_CLIENT* client, json_value* json_params)
     int coinid = job->coind->id;
 
     //! sanity check nonce
-    if (strlen(nonce) != YAAMP_NONCE_SIZE * 2 || !ishexa(nonce, YAAMP_NONCE_SIZE * 2)) {
+    if (strlen(nonce) != YAAMP_KAWPOW_NONCE_SIZE * 2 || !ishexa(nonce, YAAMP_KAWPOW_NONCE_SIZE * 2)) {
         client_submit_error(client, job, 20, "Invalid nonce size", header, mixhash, nonce);
         return true;
     }
@@ -303,9 +312,9 @@ bool kawpow_submit(YAAMP_CLIENT* client, json_value* json_params)
 
     uint256 target = client->share_target;
     uint64_t hash_int = get_hash_difficulty((uint8_t*)&hash);
-    double share_diff = diff_to_target(hash_int);
+    double share_diff = target_to_diff(hash_int);
 
-    stratumlog("client %d on job %d sent powhash %s\n", client->id, job->id, hash.ToString().c_str());
+    stratumlog("client %d on job %d sent diff %0.3f powhash %s\n", client->userid, job->id, share_diff,hash.ToString().c_str());
 
     if (hash > target) {
         client_submit_error(client, job, 26, "Low difficulty share", header, mixhash, nonce);
@@ -319,18 +328,18 @@ bool kawpow_submit(YAAMP_CLIENT* client, json_value* json_params)
     decode_nbits(coin_target, nbits);
 
     if (hash < coin_target) {
-	if (is_kawpow) {
-		kawpow_block(client, job, templ, nonce, mixhash);
-	}
-	if (is_firopow) {
-		YAAMP_COIND *coind = (YAAMP_COIND *)object_find(&g_list_coind, coinid);
-		if (!coind) {
-			clientlog(client, "unable to find the wallet for coinid %d...", coinid);
-			return false;
-		}
-		coind_pprpcsb(coind, templ->header_hash.ToString().c_str(), mixhash, nonce);
-	}
-	job_signal();
+        if (is_kawpow) {
+            kawpow_block(client, job, templ, nonce, mixhash, hash);
+        }
+        if (is_firopow) {
+            YAAMP_COIND *coind = (YAAMP_COIND *)object_find(&g_list_coind, coinid);
+            if (!coind) {
+                clientlog(client, "unable to find the wallet for coinid %d...", coinid);
+                return false;
+            }
+            coind_pprpcsb(coind, templ->header_hash.ToString().c_str(), mixhash, nonce);
+        }
+        job_signal();
     }
 
     client_send_result(client, "true");
@@ -338,7 +347,7 @@ bool kawpow_submit(YAAMP_CLIENT* client, json_value* json_params)
     client->submit_bad = 0;
     client->shares++;
 
-    share_add(client, job, true, header, mixhash, nonce, share_diff, 0, 0); // todo: fix blockheight
+    share_add(client, job, true, header, job->templ->ntime, nonce, share_diff , 0, job->templ->height);
 
     object_unlock(job);
 

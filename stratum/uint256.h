@@ -13,11 +13,27 @@
 #include <string>
 #include <vector>
 
+uint32_t static inline ReadLE32(const uint8_t *ptr) {
+    uint32_t x;
+    memcpy((char *)&x, ptr, 4);
+    return le32toh(x);
+}
+
 uint64_t static inline ReadLE64(const unsigned char* ptr)
 {
     uint64_t x;
     memcpy((char*)&x, ptr, 8);
     return le64toh(x);
+}
+
+void static inline WriteLE32(uint8_t *ptr, uint32_t x) {
+    uint32_t v = htole32(x);
+    memcpy(ptr, (char *)&v, 4);
+}
+
+void static inline WriteLE64(uint8_t *ptr, uint64_t x) {
+    uint64_t v = htole64(x);
+    memcpy(ptr, (char *)&v, 8);
 }
 
 /** Template base class for fixed-sized opaque blobs. */

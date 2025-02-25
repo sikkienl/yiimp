@@ -7,7 +7,6 @@ function updateRawcoins()
 {
 	debuglog(__FUNCTION__);
 	// exit();
-	exchange_set_default('altmarkets', 'disabled', true);
 	exchange_set_default('binance', 'disabled', true);
 	exchange_set_default('exbitron', 'disabled', false);
 	exchange_set_default('hitbtc', 'disabled', true);
@@ -18,7 +17,6 @@ function updateRawcoins()
 
 	settings_prefetch_all();
 
-	// $markets_name = array('p2pb2b','btc-alpha','tradeogre','bibox','poloniex','yobit','coinsmarkets','escodex','hitbtc','kraken','binance','gateio','kucoin','shapeshift');
 	$exchanges = getdbolist('db_balances');
 	foreach ($exchanges as $exchange) {
 		updateRawCoinExchange($exchange->name);
@@ -63,29 +61,6 @@ function updateRawCoinExchange($marketname)
 	debuglog(__FUNCTION__);
 	debuglog("==== Exchange $marketname ====");
 	switch ($marketname) {
-		case 'altmarkets':
-			if (!exchange_get($marketname, 'disabled')) 
-			{
-				$list = altmarkets_api_query('markets');
-				if(is_array($list) && !empty($list))
-				{
-					// debuglog(json_encode($list));
-					dborun("UPDATE markets SET deleted=true WHERE name='$marketname'");
-					foreach($list as $key=>$data) {
-						// debuglog(json_encode($data));
-						$e = explode("/",$data->name);
-						// debuglog(json_encode($e));
-						$base = $e[1];
-						if (strtoupper($base) !== 'BTC')
-							continue;
-						$symbol = strtoupper($e[0]);
-						// debuglog($symbol);
-						updateRawCoin($marketname, $symbol);
-					}
-				}
-			}
-		break;
-
 		case 'exbitron':
 			if (!exchange_get($marketname, 'disabled')) 
 			{
@@ -252,22 +227,6 @@ function updateRawCoinExchange($marketname)
 						if ($e[0] != 'BTC') continue;
 						$symbol = strtoupper($e[1]);
 						updateRawCoin('coinsmarkets', $symbol);
-					}
-				}
-			}
-		break;
-		case 'escodex':
-			if (!exchange_get('escodex', 'disabled')) {
-				$list = escodex_api_query('ticker');
-				if(is_array($list) && !empty($list))
-				{
-					dborun("UPDATE markets SET deleted=true WHERE name='escodex'");
-					foreach($list as $ticker) {
-						#debuglog (json_encode($ticker));
-						if (strtoupper($ticker->base) !== 'BTC')
-							continue;
-						$symbol = strtoupper($ticker->quote);
-						updateRawCoin('escodex', $symbol);
 					}
 				}
 			}
