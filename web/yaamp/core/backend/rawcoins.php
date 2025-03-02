@@ -64,26 +64,21 @@ function updateRawCoinExchange($marketname)
 		case 'exbitron':
 			if (!exchange_get($marketname, 'disabled')) 
 			{
-				$list = exbitron_api_query('markets');
+				$list = exbitron_api_query('cmc/summary');
 				if(is_array($list) && !empty($list))
 				{
 					// debuglog(json_encode($list));
 					dborun("UPDATE markets SET deleted=true WHERE name='$marketname'");
 					foreach($list as $key=>$data) {
-						// debuglog(json_encode($data));
-						$e = explode("/",$data->name);
-						// debuglog(json_encode($e));
-						$base = $e[1];
-						if (strtoupper($base) !== 'BTC'||strtoupper($base) !== 'USDT')
-							continue;
-						$symbol = strtoupper($e[0]);
-						// debuglog($symbol);
-						updateRawCoin($marketname, $symbol);
+						$base = strtoupper($data->quote_currency);
+						$symbol = strtoupper($data->base_currency);
+						updateRawCoin($marketname, $symbol, $symbol, ($base == 'BTC')?null:$base);
 					}
 				}
 			}
 		break;
 
+		/* P2PB2B code not working as api-access functions missing 
 		case 'p2pb2b':
 			debuglog("Start P2PB2B");
 			if (!exchange_get('p2pb2b', 'disabled')) 
@@ -105,7 +100,8 @@ function updateRawCoinExchange($marketname)
 					}
 				}
 			}
-		break;
+			break; */
+		/* btc-alpha code not working as api-access functions missing
 		case 'btc-alpha':
 			if (!exchange_get('btc-alpha', 'disabled')) {
 				$list = btcalpha_api_query('ticker');
@@ -121,7 +117,7 @@ function updateRawCoinExchange($marketname)
 					}
 				}
 			}
-		break;
+			break; */
 		case 'xeggex':
 			if (!exchange_get('xeggex', 'disabled')) {
 				$list = xeggex_api_query('tickers','','array');
@@ -138,19 +134,19 @@ function updateRawCoinExchange($marketname)
 		break;
 	
 		case 'nonkyc':
-		if (!exchange_get('nonkyc', 'disabled')) {
-			$list = nonkyc_api_query('tickers','','array');
-			if(is_array($list) && !empty($list)) {
-				dborun("UPDATE markets SET deleted=true WHERE name='nonkyc'");
-				foreach ($list as $tickers) {
-					$base = strtoupper($tickers['target_currency']);
-					if (strtoupper($base) !== 'BTC'||strtoupper($base) !== 'USDT')
-					$symbol = strtoupper($tickers['base_currency']);
-					updateRawCoin('nonkyc', $symbol, $symbol);
+			if (!exchange_get('nonkyc', 'disabled')) {
+				$list = nonkyc_api_query('tickers','','array');
+				if(is_array($list) && !empty($list)) {
+					dborun("UPDATE markets SET deleted=true WHERE name='nonkyc'");
+					foreach ($list as $tickers) {
+						$base = strtoupper($tickers['target_currency']);
+						if (strtoupper($base) !== 'BTC'||strtoupper($base) !== 'USDT')
+						$symbol = strtoupper($tickers['base_currency']);
+						updateRawCoin('nonkyc', $symbol, $symbol, ($base == 'BTC')?null:$base);
+					}
 				}
 			}
-		}
-		break;
+			break;
 	
 		case 'safetrade':
 			if (!exchange_get('safetrade', 'disabled')) {
@@ -162,7 +158,7 @@ function updateRawCoinExchange($marketname)
 						$base = strtoupper($tickers['quote_unit']);
 						if (strtoupper($base) !== 'BTC'||strtoupper($base) !== 'USDT')
 						$symbol = strtoupper($tickers['base_unit']);
-						updateRawCoin('safetrade', $symbol, $symbol);
+						updateRawCoin('safetrade', $symbol, $symbol, ($base == 'BTC')?null:$base);
 					}
 				}
 			}
@@ -177,10 +173,9 @@ function updateRawCoinExchange($marketname)
 					foreach($list as $ticker) {
 						$symbol_index = key($ticker);
 						$e = explode('-', $symbol_index);
-						if (strtoupper($e[0]) !== 'BTC')
-							continue;
+						$base = strtoupper($e[0]);
 						$symbol = strtoupper($e[1]);
-						updateRawCoin('tradeogre', $symbol);
+						updateRawCoin('tradeogre', $symbol, ($base == 'BTC')?null:$base);
 					}
 				}
 			}
@@ -212,21 +207,6 @@ function updateRawCoinExchange($marketname)
 						$e = explode('_', $i);
 						$symbol = strtoupper($e[0]);
 						updateRawCoin('yobit', $symbol);
-					}
-				}
-			}
-		break;
-		case 'coinsmarkets':
-			if (!exchange_get('coinsmarkets', 'disabled')) {
-				$list = coinsmarkets_api_query('apicoin');
-				if(!empty($list) && is_array($list))
-				{
-					dborun("UPDATE markets SET deleted=true WHERE name='coinsmarkets'");
-					foreach($list as $pair=>$data) {
-						$e = explode('_', $pair);
-						if ($e[0] != 'BTC') continue;
-						$symbol = strtoupper($e[1]);
-						updateRawCoin('coinsmarkets', $symbol);
 					}
 				}
 			}
@@ -354,7 +334,7 @@ function updateRawCoin($marketname, $symbol, $name='unknown', $reference_symbol 
 	{
 		$algo = '';
 
-		if (in_array($marketname, array('askcoin','binance','coinsmarkets','hitbtc'))) {
+		if (in_array($marketname, array('askcoin','binance','hitbtc'))) {
 			// don't polute too much the db with new coins, its better from exchanges with labels
 			return;
 		}

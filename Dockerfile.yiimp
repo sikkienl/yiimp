@@ -19,10 +19,14 @@ RUN set -xe \
 #    && : "---------- Copy config ----------" \
 #    && mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" \
     && : "---------- Modify apache config ----------" \
+    && a2enmod remoteip \
     && a2enmod rewrite
 
 COPY config/000-default.conf /etc/apache2/sites-available/
 COPY config/ports.conf /etc/apache2/
+RUN echo "RemoteIPHeader x-forwarded-for" >> /etc/apache2/apache2.conf \
+    && echo "RemoteIPInternalProxy 127.0.0.1" >> /etc/apache2/apache2.conf
+
 
 RUN set -xe \
     && : "---------- change gcc version to v9 as newer versions build invalid stratum code ----------"

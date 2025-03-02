@@ -1,8 +1,8 @@
 <?php
-//https://www.exbitron.com/api/v2/peatio/public/markets
+
 function exbitron_api_query($method)
 {
-	$uri = "https://www.exbitron.com/api/v2/peatio/public/{$method}";
+	$uri = "https://api.exbitron.digital/api/v1/{$method}";
 
     $ch = curl_init($uri);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
