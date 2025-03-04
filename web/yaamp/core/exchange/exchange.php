@@ -63,7 +63,7 @@ function getMarketUrl($coin, $marketName)
 	else if($market == 'cexio')
 		$url = "https://cex.io/trade/{$symbol}-{$base}";
 	else if($market == 'exbitron')
-		$url = "https://www.exbitron.com/trading/{$lowsymbol}{$lowbase}";
+		$url = "https://app.exbitron.com/exchange/?market={$symbol}-{$base}";
 	else if($market == 'gateio')
 		$url = "https://gate.io/trade/{$symbol}_{$base}";
 	else if($market == 'hitbtc')
