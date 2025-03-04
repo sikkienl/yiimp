@@ -94,10 +94,14 @@ define('EXCH_POLONIEX_SECRET', '');
 define('EXCH_SAFETRADE_KEY', '');
 define('EXCH_SAFETRADE_SECRET', '');
 
+define('EXCH_TRADEOGRE_KEY', '');
 define('EXCH_TRADEOGRE_SECRET', '');
 
 define('EXCH_YOBIT_KEY', '');
 define('EXCH_YOBIT_SECRET', '');
+
+define('EXCH_NONKYC_KEY', '');
+define('EXCH_NONKYC_SECRET', '');
 
 define('EXCH_XEGGEX_KEY', '');
 define('EXCH_XEGGEX_SECRET', '');

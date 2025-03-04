@@ -48,14 +48,17 @@ function BackendPricesUpdate()
 		$market = getBestMarket($coin);
 		if($market)
 		{
-			$coin->price = $market->price*(1-YAAMP_FEES_EXCHANGE/100);
-			$coin->price2 = $market->price2;
-
-			$base_coin = !is_null($market->base_coin)? getdbosql('db_coins', "symbol='{$market->base_coin}'"): null;
-			if($base_coin)
-			{
-				$coin->price *= $base_coin->price;
-				$coin->price2 *= $base_coin->price;
+			if (is_null($market->base_coin)) {
+				$coin->price = $market->price*(1-YAAMP_FEES_EXCHANGE/100);
+				$coin->price2 = $market->price2;
+			}
+			else {
+				$base_coin = getdbosql('db_coins', "symbol='{$market->base_coin}'");
+				if($base_coin)
+				{
+					$coin->price *= $base_coin->price;
+					$coin->price2 *= $base_coin->price;
+				}
 			}
 		}
 		else {
@@ -339,11 +342,9 @@ function updateExbitronMarkets() {
 		$symbol = $coin->getOfficialSymbol();
 		$pair = strtoupper($symbol).'_BTC';
 	
-		$sqlFilter = '';
 		if (!empty($market->base_coin))
 		{
 			$pair = strtoupper($symbol.'_'.$market->base_coin);
-			$sqlFilter = "AND base_coin='{$market->base_coin}'";
 		}
 		if (market_get($exchange, $symbol, "disabled"))
 		{
@@ -507,11 +508,9 @@ function updateXeggexMarkets()
 	$symbol = $coin->getOfficialSymbol();
 	$pair = strtolower($symbol).'_btc';
 
-	$sqlFilter = '';
 	if (!empty($market->base_coin))
 	{
 		$pair = strtolower($symbol.'_'.$market->base_coin);
-		$sqlFilter = "AND base_coin='{$market->base_coin}'";
 	}
 	if (market_get($exchange, $symbol, "disabled"))
 	{
@@ -560,10 +559,8 @@ function updateNonKYCMarkets()
 	$symbol = $coin->getOfficialSymbol();
 	$pair = strtolower($symbol).'_btc';
 
-	$sqlFilter = '';
 	if (!empty($market->base_coin)) {
 		$pair = strtolower($symbol.'_'.$market->base_coin);
-		$sqlFilter = "AND base_coin='{$market->base_coin}'";
 	}
 	if (market_get($exchange, $symbol, "disabled")) {
 		$market->disabled = 1;
@@ -610,6 +607,12 @@ function updateTradeOgreMarkets($force = false)
 		if(!$coin) continue;
 
 		$symbol = $coin->getOfficialSymbol();
+		$dbpair = strtoupper($symbol).'-BTC';
+		if (!empty($market->base_coin))
+		{
+			$dbpair = strtoupper($symbol.'-'.$market->base_coin);
+		}
+	
 		if (market_get($exchange, $symbol, "disabled")) {
 			$market->disabled = 1;
 			$market->message = 'disabled from settings';
@@ -617,29 +620,23 @@ function updateTradeOgreMarkets($force = false)
 			continue;
 		}
 
-
-		$symbol = strtoupper($symbol);
-		$dbpair = 'BTC-' .$symbol;
-
 		foreach ($markets as $ticker) {
-			debuglog(json_encode($ticker));
 			$pair = key($ticker);
-			if ($pair != $dbpair) continue;
+			if ($pair === $dbpair) {
+				$price2 = ($ticker[$pair]['bid']+$ticker[$pair]['ask'])/2;
+				$market->price = AverageIncrement($market->price, $ticker[$pair]['bid']);
+				$market->price2 = AverageIncrement($market->price2, $price2);
+				$market->pricetime = time();
+				$market->save();
 
-			$price2 = ($ticker[$pair]['bid']+$ticker[$pair]['ask'])/2;
-			$market->price = AverageIncrement($market->price, $ticker[$pair]['bid']);
-			$market->price2 = AverageIncrement($market->price2, $price2);
-			$market->pricetime = time();
-			$market->save();
-
-			if ((empty($coin->price))||(empty($coin->price2))) {
-				$coin->price = $market->price;
-				$coin->price2 = $market->price2;
-				$coin->market = $exchange;
-				$coin->save();
+				if ((empty($coin->price))||(empty($coin->price2))) {
+					$coin->price = $market->price;
+					$coin->price2 = $market->price2;
+					$coin->market = $exchange;
+					$coin->save();
+				}
 			}
 		}
-
 	}
 }
 
@@ -993,11 +990,9 @@ function updateHitBTCMarkets()
 		$symbol = $coin->getOfficialSymbol();
 		$pair = strtoupper($symbol).$base;
 
-		$sqlFilter = '';
 		if (!empty($market->base_coin)) {
 			$base = $market->base_coin;
 			$pair = strtoupper($market->base_coin.$symbol);
-			$sqlFilter = "AND base_coin='{$market->base_coin}'";
 		}
 
 		if (market_get($exchange, $symbol, "disabled", false, $base)) {

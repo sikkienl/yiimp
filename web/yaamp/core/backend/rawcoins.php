@@ -173,9 +173,9 @@ function updateRawCoinExchange($marketname)
 					foreach($list as $ticker) {
 						$symbol_index = key($ticker);
 						$e = explode('-', $symbol_index);
-						$base = strtoupper($e[0]);
-						$symbol = strtoupper($e[1]);
-						updateRawCoin('tradeogre', $symbol, ($base == 'BTC')?null:$base);
+						$base = strtoupper($e[1]);
+						$symbol = strtoupper($e[0]);
+						updateRawCoin('tradeogre', $symbol, $symbol, ($base == 'BTC')?null:$base);
 					}
 				}
 			}

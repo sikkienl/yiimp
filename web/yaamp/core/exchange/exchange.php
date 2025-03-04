@@ -75,7 +75,7 @@ function getMarketUrl($coin, $marketName)
 	else if ($market == 'nonkyc')
 		$url = "https://nonkyc.io/market/{$symbol}_{$base}";
 	else if($market == 'tradeogre')
-		$url = "https://tradeogre.com/exchange/{$base}-{$symbol}";
+		$url = "https://tradeogre.com/exchange/{$symbol}-{$base}";
 	else if($market == 'yobit')
 		$url = "https://yobit.net/en/trade/{$symbol}/{$base}";
 	else if($market == 'safetrade')
