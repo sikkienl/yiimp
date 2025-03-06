@@ -1,34 +1,35 @@
 <?php
-function doTradeogreCancelOrder($OrderID = false) {
+function doNonkycCancelOrder($OrderID = false) {
 	if(!$OrderID) return;
 
-	$params = [ 'uuid' => $OrderID ];
+	$params = json_encode([ 'id' => $OrderID ]);
 
-	$res = tradeogre_api_user('order/cancel', $params, 'POST' ,'array');
+	$res = nonkyc_api_user('cancelorder', $params, 'POST' ,'array');
+
 	if(is_array($res)) {
 		$db_order = getdbosql('db_orders', "market=:market AND uuid=:uuid", array(
-			':market'=>'tradeogre', ':uuid'=>$OrderID
+			':market'=>'nonkyc', ':uuid'=>$OrderID
 		));
 		if($db_order) $db_order->delete();
 	}
 }
 
-function doTradeogreTrading($quick=false) {
+function doNonkycTrading($quick=false) {
 
-	$exchange = 'tradeogre';
+	$exchange = 'nonkyc';
 	$updatebalances = true;
 	if (exchange_get($exchange, 'disabled')) return;
 
-	$balances = tradeogre_api_user('account/balances','','GET','array');
-	//debuglog("tradeogre ".var_export($balances,true));
+	$balances = nonkyc_api_user('balances','','GET','array');
+	//debuglog("nonkyc ".var_export($balances,true));
 	if (!is_array($balances)) return;
 
 	$savebalance = getdbosql('db_balances', "name='$exchange'");
-	foreach($balances['balances'] as $symbol => $balance) {
-		if (strtoupper($symbol) == 'BTC') {
+	foreach($balances as $balance) {
+		if (strtoupper($balance['asset']) == 'BTC') {
 			if (is_object($savebalance)) {
-				$savebalance->balance = $balance;
-				$savebalance->onsell = 0;
+				$savebalance->balance = $balance['available'];
+				$savebalance->onsell = $balance['held'];
 				$savebalance->save();
 			}
 			continue;
@@ -36,21 +37,21 @@ function doTradeogreTrading($quick=false) {
 		if ($updatebalances) {
 			// store available balance in market table
 			$coins = getdbolist('db_coins', "symbol=:symbol OR symbol2=:symbol",
-				array(':symbol'=>strtoupper($symbol))
+				array(':symbol'=>strtoupper($balance['asset']))
 			);
 			if (empty($coins)) continue;
 			foreach ($coins as $coin) {
 				$market = getdbosql('db_markets', "coinid=:coinid AND name='$exchange'", array(':coinid'=>$coin->id));
 				if (!$market) continue;
-				$market->balance = $balance;
-				$market->ontrade = 0;
+				$market->balance = $balance['available'];
+				$market->ontrade = $balance['held'];
 				$market->balancetime = time();
 				$market->save();
 			}
 		}
 	}
 	if (!YAAMP_ALLOW_EXCHANGE) return;
-
+	
 	$flushall = rand(0, 8) == 0;
 	if($quick) $flushall = false;
 	
@@ -58,46 +59,51 @@ function doTradeogreTrading($quick=false) {
 	$sell_ask_pct = 1.01;        // sell on ask price + 5%
 	$cancel_ask_pct = 1.20;      // cancel order if our price is more than ask price + 20%
 	
-	$marketprices = tradeogre_api_query('markets','','array');
+	$marketprices = nonkyc_api_query('tickers','','array');
 	if (!is_array($marketprices)) return;
 
+	foreach($marketprices as $singlemarket) {
+		if (isset($singlemarket['ticker_id']))	{
+			$newmarketprices[$singlemarket['ticker_id']] = $singlemarket;
+		}
+	}
+	$marketprices = $newmarketprices;
+
 	// auto trade
-	foreach ($balances['balances'] as $balance_symbol => $balance) {
-		if (strtoupper($balance_symbol) == 'BTC') continue;
-
-		if ($balance == 0) continue;
-
-		// fetch balance available
-		$params = [
-			'currency' => strtoupper($balance_symbol),
-		  ];
-		$balance_result = tradeogre_api_user('account/balance', $params, 'POST', 'array' );
-
-		if (!is_array($marketprices)) continue;
-		$balance = $balance_result['available'];
-
+	foreach ($balances as $balance) {
+		if (strtoupper($balance['asset']) == 'BTC') continue;
+		if (($balance['available'] == 0) && ($balance['held'] == 0)) continue;
+		
 		$marketsummary = null;
-		$tickersymbol = strtoupper($balance_symbol.'-BTC');
-
-		foreach($marketprices as $singlemarket) {
-			if (isset($singlemarket[$tickersymbol])) {
-				$marketsummary = $singlemarket[$tickersymbol];
-			}
+		$tickersymbol = strtoupper($balance['asset'].'_btc');
+		if (isset($marketprices[$tickersymbol])) {
+			$marketsummary = $marketprices[$tickersymbol];
 		}
 		if (!is_array($marketsummary)) continue;
 
-		$coin = getdbosql('db_coins', "symbol=:symbol AND dontsell=0", array(':symbol'=>strtoupper($balance_symbol)));
+		$heldForTrades = $balance['held'];
+	
+		$coin = getdbosql('db_coins', "symbol=:symbol AND dontsell=0", array(':symbol'=>strtoupper($balance['asset'])));
 		if(!$coin) continue;
 		$symbol = $coin->symbol;
 		if (!empty($coin->symbol2)) $symbol = $coin->symbol2;
 
-		$market = getdbosql('db_markets', "coinid=:coinid AND name='tradeogre'", array(':coinid'=>$coin->id));
+		$market = getdbosql('db_markets', "coinid=:coinid AND name='nonkyc'", array(':coinid'=>$coin->id));
 		if(!$market) continue;
+		$market->balance = $heldForTrades;
 	
-		$params = [
-					 'market' => strtoupper($symbol.'-BTC'),
-	 			  ];
-		$orders = tradeogre_api_user('account/orders', $params, 'POST', 'array' );
+		$orders = NULL;
+		if ($heldForTrades > 0) {
+			$params = [
+						'symbol' => strtoupper($symbol.'_btc'),
+						'status'=> 'active',
+						'limit'=> 20,
+						'skip'=> 0,
+					  ];
+			$orders = nonkyc_api_user('getorders', $params, 'GET', 'array' );
+		}
+
+		// debuglog("nonkyc ".var_export($orders,true));
 
 		if(is_array($orders) && !empty($orders)) {
 			foreach($orders as $order) {
@@ -106,33 +112,33 @@ function doTradeogreTrading($quick=false) {
 				if ($tmpbase != 'BTC') continue;
 				
 				// ignore buy orders
-				if(stripos($order['type'], 'sell') === false) continue;
+				if(stripos($order['side'], 'sell') === false) continue;
 	
 				$ask = bitcoinvaluetoa($marketsummary['ask']);
 				$sellprice = bitcoinvaluetoa($order['price']);
 
 				// cancel orders not on the wanted ask range
 				if($sellprice > $ask*$cancel_ask_pct || $flushall) {
-					debuglog("tradeogre: cancel order ".$symbol." at $sellprice, ask price is now $ask");
-					doTradeogreCancelOrder($order['uuid']);
+					debuglog("nonkyc: cancel order ".$symbol." at $sellprice, ask price is now $ask");
+					doNonkycCancelOrder($order['id']);
 				}
 				// store existing orders
 				else
 				{
 					$db_order = getdbosql('db_orders', "market=:market AND uuid=:uuid", array(
-							':market'=>'tradeogre', ':uuid'=>$order['uuid']
+							':market'=>'nonkyc', ':uuid'=>$order['id']
 					));
 					if($db_order) continue;
 	
-					// debuglog("tradeogre: store order of {$order->Amount} {$symbol} at $sellprice BTC");
+					// debuglog("nonkyc: store order of {$order->Amount} {$symbol} at $sellprice BTC");
 					$db_order = new db_orders;
-					$db_order->market = 'tradeogre';
+					$db_order->market = 'nonkyc';
 					$db_order->coinid = $coin->id;
 					$db_order->amount = $order['quantity'];
 					$db_order->price = $sellprice;
 					$db_order->ask = $marketsummary['ask'];
 					$db_order->bid = $marketsummary['bid'];
-					$db_order->uuid = $order['uuid'];
+					$db_order->uuid = $order['id'];
 					$db_order->created = time(); // $order->TimeStamp 2016-03-07T20:04:05.3947572"
 					$db_order->save();
 				}
@@ -140,14 +146,14 @@ function doTradeogreTrading($quick=false) {
 		}
 
 		// drop obsolete orders
-		$list = getdbolist('db_orders', "coinid={$coin->id} AND market='tradeogre'");
+		$list = getdbolist('db_orders', "coinid={$coin->id} AND market='nonkyc'");
 		foreach($list as $db_order)
 		{
 			$found = false;
 			if(is_array($orders) && !empty($orders)) {
 				foreach($orders as $order) {
-					if(stripos($order['type'], 'sell') === false) continue;
-					if($order['uuid'] == $db_order->uuid) {
+					if(stripos($order['side'], 'sell') === false) continue;
+					if($order['id'] == $db_order->uuid) {
 						$found = true;
 						break;
 					}
@@ -155,7 +161,7 @@ function doTradeogreTrading($quick=false) {
 			}
 	
 			if(!$found) {
-				// debuglog("tradeogre: delete db order {$db_order->amount} {$coin->symbol} at {$db_order->price} BTC");
+				// debuglog("nonkyc: delete db order {$db_order->amount} {$coin->symbol} at {$db_order->price} BTC");
 				$db_order->delete();
 			}
 		}
@@ -167,22 +173,29 @@ function doTradeogreTrading($quick=false) {
 
 		// new orders
 		//$amount = floatval($balance->available) - 0.00000001;
-		$amount = floatval($balance);
+		$amount = floatval($balance['available']);
 		if(!$amount) continue;
 	
 		if($amount*$coin->price < $min_btc_trade) continue;
 
-		$order_precision = 8;
+		// fetch market configuration
+		$query_parameters = 'market/getbysymbol/'.strtoupper($symbol.'_btc');
+		$market_configuration = nonkyc_api_query($query_parameters, '', 'array');
 
-		$orderparameters = 'orders/'.strtoupper($symbol.'-btc');
-		$data = tradeogre_api_query($orderparameters, '', 'array');
+		if(!is_array($market_configuration) || empty($market_configuration)) continue;
+		$order_precision = $market_configuration['priceDecimals'];
+
+		$orderparameters = 'ticker_id='.strtoupper($symbol.'_btc').'&depth=10';
+		$data = nonkyc_api_query('orderbook', $orderparameters, 'array');
+
+		//debuglog("nonkyc ".var_export($data,true));
 
 		if(!is_array($data) || empty($data)) continue;
 		if($coin->sellonbid) {
 			for($i = 0; ($i < 5) && ($amount >= 0); $i++) {
-				if(!isset($data['buy'][$i])) break;
+				if(!isset($data['bids'][$i])) break;
 	
-				$nextbuy = $data['buy'][$i]; // 0: price , 1: volume
+				$nextbuy = $data['bids'][$i]; // 0: price , 1: volume
 				if($amount*1.1 < $nextbuy[1]) break;
 	
 				$sellprice = bitcoinvaluetoa($nextbuy[0],$order_precision);
@@ -190,15 +203,15 @@ function doTradeogreTrading($quick=false) {
 
 				if($sellamount*$sellprice < $min_btc_trade) continue;
 
-				debuglog("tradeogre: selling on bid $sellamount $symbol at $sellprice");
-				$orderparameters = [ 'market' => strtoupper($symbol).'-btc' ,
+				debuglog("nonkyc: selling on bid $sellamount $symbol at $sellprice");
+				$orderparameters = [ 'symbol' => strtoupper($balance['asset']).'_btc' ,
 								 'price' => number_format($sellprice,10) ,
-								 'duration' => 'GTC' ,
+								 'side' => 'sell' ,
 								 'quantity' => "$amount" ];
-				$res = tradeogre_api_user('order/sell', json_encode($orderparameters) , 'POST', 'array');
+				$res = nonkyc_api_user('createorder', json_encode($orderparameters) , 'POST', 'array');
 	
 				if(!is_array($res)) {
-					debuglog("tradeogre SubmitTrade err: ".json_encode($res));
+					debuglog("nonkyc SubmitTrade err: ".json_encode($res));
 					continue;
 				}
 	
@@ -215,27 +228,27 @@ function doTradeogreTrading($quick=false) {
 
 			if($amount * $sellprice < $min_btc_trade) continue;
 
-			debuglog("tradeogre: selling $amount $symbol at $sellprice");
+			debuglog("nonkyc: selling $amount $symbol at $sellprice");
 
-			$orderparameters = [ 'market' => strtoupper($symbol).'-btc' ,
+			$orderparameters = [ 'symbol' => strtoupper($balance['asset']).'_btc' ,
 								 'price' => number_format($sellprice,10) ,
-								 'duration' => 'GTC' ,
+								 'side' => 'sell' ,
 								 'quantity' => "$amount" ];
-			$res = tradeogre_api_user('order/sell', $orderparameters , 'POST', 'array');
+			$res = nonkyc_api_user('createorder', json_encode($orderparameters) , 'POST', 'array');
 
-			if(!is_array($res) || ($res['success'] === false)) {
-				debuglog("tradeogre SubmitTrade err: ".json_encode($res));
+			if(!is_array($res)) {
+				debuglog("nonkyc SubmitTrade err: ".json_encode($res));
 				continue;
 			}
 
 			$db_order = new db_orders;
-			$db_order->market = 'tradeogre';
+			$db_order->market = 'nonkyc';
 			$db_order->coinid = $coin->id;
 			$db_order->amount = $amount;
 			$db_order->price = $sellprice;
 			$db_order->ask = $marketsummary['ask'];
 			$db_order->bid = $marketsummary['bid'];
-			$db_order->uuid = $res['uuid'];
+			$db_order->uuid = $res['id'];
 			$db_order->created = time();
 			$db_order->save();
 	}
