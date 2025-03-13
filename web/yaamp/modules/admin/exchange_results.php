@@ -14,7 +14,7 @@ echo "<th>Quantity</th>";
 echo "<th>Ask</th>";
 echo "<th>Bid</th>";
 echo "<th>Value</th>";
-//echo "<th></th>";
+echo "<th></th>";
 echo "</tr>";
 echo "</thead><tbody>";
 
@@ -50,10 +50,10 @@ foreach($orders as $order)
 	echo "<td>$bid ({$bidpercent}%)</td>";
 	echo $bidvalue>0.01? "<td><b>$bidvalue</b></td>": "<td>$bidvalue</td>";
 
-// 	echo "<td>";
-// 	echo "<a href='/admin/cancelorder?id=$order->id'>[cancel]</a> ";
+ 	echo "<td>";
+ 	echo "<a href='/admin/cancelorder?id=$order->id'>[cancel]</a> ";
 // 	echo "<a href='/admin/sellorder?id=$order->id'>[sell]</a>";
-// 	echo "</td>";
+ 	echo "</td>";
 	echo "</tr>";
 }
 
@@ -63,8 +63,8 @@ echo "<tr>";
 echo "<td></td>";
 echo "<td>Total</td>";
 echo "<td colspan=3></td>";
-echo "<td><b>$totalvalue</b></td>";
-echo "<td><b>$totalbid ({$bidpercent}%)</b></td>";
+echo "<td><b>".bitcoinvaluetoa($totalvalue)."</b></td>";
+echo "<td><b>".bitcoinvaluetoa($totalbid)." ({$bidpercent}%)</b></td>";
 echo "<td></td>";
 echo "</tr>";
 
@@ -72,8 +72,8 @@ echo "</tbody></table>";
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-$exchanges = getdbolist('db_exchange', "1 order by send_time desc limit 150");
-//$exchanges = getdbolist('db_exchange', "status='waiting' order by send_time desc");
+$exchanges_deposits = getdbolist('db_exchange_deposit', "1 order by send_time desc limit 150");
+//$exchanges = getdbolist('db_exchange_deposit', "status='waiting' order by send_time desc");
 
 echo "<br><table class='dataGrid'>";
 echo "<thead>";
@@ -90,40 +90,40 @@ echo "<th></th>";
 echo "</tr>";
 echo "</thead><tbody>";
 
-foreach($exchanges as $exchange)
+foreach($exchanges_deposits as $exchange_deposit)
 {
-	$coin = getdbo('db_coins', $exchange->coinid);
+	$coin = getdbo('db_coins', $exchange_deposit->coinid);
 	$lowsymbol = strtolower($coin->symbol);
 	$coinimg = CHtml::image($coin->image, $coin->symbol, array('width'=>'16'));
 
-	$marketurl = getMarketUrl($coin, $exchange->market);
+	$marketurl = getMarketUrl($coin, $exchange_deposit->market);
 
-	if($exchange->status == 'waiting')
+	if($exchange_deposit->status == 'waiting')
 		echo "<tr style='background-color: #e0d3e8;'>";
 	else
 		echo "<tr class='ssrow'>";
 
-	$sent = datetoa2($exchange->send_time). ' ago';
-	$received = $exchange->receive_time? sectoa($exchange->receive_time-$exchange->send_time): '';
-	$price = $exchange->price? bitcoinvaluetoa($exchange->price): bitcoinvaluetoa($coin->price);
-	$estimate = bitcoinvaluetoa($exchange->price_estimate);
-	$total = $exchange->price? bitcoinvaluetoa($exchange->quantity*$exchange->price): bitcoinvaluetoa($exchange->quantity*$coin->price);
+	$sent = datetoa2($exchange_deposit->send_time). ' ago';
+	$received = $exchange_deposit->receive_time? sectoa($exchange_deposit->receive_time-$exchange_deposit->send_time): '';
+	$price = $exchange_deposit->price? bitcoinvaluetoa($exchange_deposit->price): bitcoinvaluetoa($coin->price);
+	$estimate = bitcoinvaluetoa($exchange_deposit->price_estimate);
+	$total = $exchange_deposit->price? bitcoinvaluetoa($exchange_deposit->quantity*$exchange_deposit->price): bitcoinvaluetoa($exchange_deposit->quantity*$coin->price);
 
 	echo '<td width="16">'.$coinimg.'</td>';
 	echo '<td><b><a href="/admin/coin?id='.$coin->id.'">'."$coin->name</a></b>&nbsp;($coin->symbol)</td>";
-	echo '<td><b><a href="'.$marketurl.'" target="_blank">'.$exchange->market.'</a></b></td>';
+	echo '<td><b><a href="'.$marketurl.'" target="_blank">'.$exchange_deposit->market.'</a></b></td>';
 	echo '<td>'.$sent.'</td>';
-	echo '<td>'.$exchange->quantity.'</td>';
+	echo '<td>'.$exchange_deposit->quantity.'</td>';
 	echo '<td>'.$estimate.'</td>';
 	echo '<td>'.$price.'</td>';
 	echo $total>0.01? "<td><b>$total</b></td>": "<td>$total</td>";
 
 	echo "<td>";
 
-	if($exchange->status == 'waiting')
+	if($exchange_deposit->status == 'waiting')
 	{
-	//	echo "<a href='/admin/clearexchange?id=$exchange->id'>[clear]</a>";
-		echo "<a href='/admin/deleteexchange?id=$exchange->id'>[del]</a>";
+	//	echo "<a href='/admin/clearexchange?id=$exchange_deposit->id'>[clear]</a>";
+		echo "<a href='/admin/deleteexchangedeposit?id=$exchange_deposit->id'>[del]</a>";
 	}
 
 	echo "</td>";

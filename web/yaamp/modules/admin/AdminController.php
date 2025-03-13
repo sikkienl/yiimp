@@ -870,15 +870,15 @@ class AdminController extends CommonController {
 
 	//////////////////////////////////////////////////////////////////////////////////////////////////
 
-	public function actionDeleteExchange()
+	public function actionDeleteExchangeDeposit()
 	{
 		if(!$this->admin) return;
-		$exchange = getdbo('db_exchange', getiparam('id'));
-		if ($exchange) {
-			$exchange->status = 'deleted';
-			$exchange->price = 0;
-			$exchange->receive_time = time();
-			$exchange->save();
+		$exchange_deposit = getdbo('db_exchange_deposit', getiparam('id'));
+		if ($exchange_deposit) {
+			$exchange_deposit->status = 'deleted';
+			$exchange_deposit->price = 0;
+			$exchange_deposit->receive_time = time();
+			$exchange_deposit->save();
 		}
 		$this->goback();
 	}
@@ -930,7 +930,7 @@ class AdminController extends CommonController {
 		if($coin)
 		{
 		//	dborun("delete from blocks where coin_id=$coin->id");
-			dborun("delete from exchange where coinid=$coin->id");
+			dborun("delete from exchange_deposit where coinid=$coin->id");
 			dborun("delete from earnings where coinid=$coin->id");
 		//	dborun("delete from markets where coinid=$coin->id");
 			dborun("delete from orders where coinid=$coin->id");

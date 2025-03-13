@@ -160,7 +160,7 @@ function BackendCleanDatabase()
 	dborun("delete from hashuser where time<$delay");
 	dborun("delete from hashrenter where time<$delay");
 	dborun("delete from balanceuser where time<$delay");
-	dborun("delete from exchange where send_time<$delay");
+	dborun("delete from exchange_deposit where send_time<$delay");
 	dborun("DELETE FROM shares WHERE time<$delay AND coinid NOT IN (select id from coins)");
 	dborun("UPDATE shares SET workerid = 0 WHERE workerid > 0 AND workerid NOT IN (SELECT id FROM workers)");
 
