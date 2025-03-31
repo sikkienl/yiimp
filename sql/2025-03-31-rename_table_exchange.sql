@@ -1,0 +1,1 @@
+RENAME TABLE `exchange` TO `exchange_deposit`;
