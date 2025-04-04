@@ -7,7 +7,7 @@ uint64_t lyra2z_height = 0;
 //#define DONTSUBMIT
 
 void build_submit_values(YAAMP_JOB_VALUES *submitvalues, YAAMP_JOB_TEMPLATE *templ,
-	const char *nonce1, const char *nonce2, const char *ntime, const char *nonce)
+	const char *nonce1, const char *nonce2, const char *ntime, const char *nonce, uint32_t versionbits)
 {
 	sprintf(submitvalues->coinbase, "%s%s%s%s", templ->coinb1, nonce1, nonce2, templ->coinb2);
 	int coinbase_len = strlen(submitvalues->coinbase);
@@ -68,7 +68,9 @@ void build_submit_values(YAAMP_JOB_VALUES *submitvalues, YAAMP_JOB_TEMPLATE *tem
 		sprintf(submitvalues->header_be, "%s%s", submitvalues->header_be, templ->priceinfo);
 	} else
 	{
-		sprintf(submitvalues->header, "%s%s%s%s%s%s", templ->version, templ->prevhash_be, submitvalues->merkleroot_be,
+		uint32_t templ_version = strtoul(templ->version, NULL, 16);
+		if (versionbits != 0x00000000) { templ_version |= versionbits; 	}
+		sprintf(submitvalues->header, "%08x%s%s%s%s%s", templ_version, templ->prevhash_be, submitvalues->merkleroot_be,
 			ntime, templ->nbits, nonce);
 		ser_string_be(submitvalues->header, submitvalues->header_be, 20);
 	}
@@ -243,7 +245,7 @@ static void build_submit_values_decred(YAAMP_JOB_VALUES *submitvalues, YAAMP_JOB
 /////////////////////////////////////////////////////////////////////////////////
 
 static void client_do_submit(YAAMP_CLIENT *client, YAAMP_JOB *job, YAAMP_JOB_VALUES *submitvalues,
-	char *extranonce2, char *ntime, char *nonce, char *vote)
+	char *extranonce2, char *ntime, char *nonce, char *vote, uint32_t versionmask)
 {
 	YAAMP_COIND *coind = job->coind;
 	YAAMP_JOB_TEMPLATE *templ = job->templ;
@@ -517,6 +519,8 @@ bool client_submit(YAAMP_CLIENT *client, json_value *json_params)
 	char nonce[80] = { 0 };
 	char ntime[32] = { 0 };
 	char vote[8] = { 0 };
+	char versionbits[32] = { 0 };
+	uint32_t versionmask = 0x00000000;
 	char equihash_solution[2800] = { 0 };
 
 
@@ -524,6 +528,7 @@ bool client_submit(YAAMP_CLIENT *client, json_value *json_params)
 	memset(ntime, 0, 32);
 	memset(nonce, 0, 64);
 	memset(vote, 0, 8);
+	memset(versionbits, 0, 32);
 	memset(equihash_solution, 0, 2800);
 
 	if (strlen(json_params->u.array.values[1]->u.string.ptr) > 32) {
@@ -552,7 +557,13 @@ bool client_submit(YAAMP_CLIENT *client, json_value *json_params)
 	string_lower(equihash_solution);
 
 	if (json_params->u.array.length == 6) {
-		if (strstr(g_stratum_algo, "phi")) {
+		if (strstr(g_stratum_algo, "sha256")) {
+			// get versionbits for asicboost
+			strncpy(versionbits, json_params->u.array.values[5]->u.string.ptr, 32);
+			string_lower(versionbits);
+			versionmask = strtoul(versionbits, NULL, 16);
+		}
+		else if (strstr(g_stratum_algo, "phi")) {
 			// lux optional field, smart contral root hashes (not mandatory on shares submit)
 			strncpy(extra, json_params->u.array.values[5]->u.string.ptr, 128);
 			string_lower(extra);
@@ -664,7 +675,7 @@ bool client_submit(YAAMP_CLIENT *client, json_value *json_params)
 	else if (is_equihash)
 		build_submit_values_equihash(&submitvalues, templ, client->extranonce1, ntime, nonce, equihash_solution);
 	else {
-		build_submit_values(&submitvalues, templ, client->extranonce1, extranonce2, ntime, nonce);
+		build_submit_values(&submitvalues, templ, client->extranonce1, extranonce2, ntime, nonce, versionmask);
 	}
 
 	if (templ->height && !strcmp(g_current_algo->name,"lyra2z")) {
@@ -710,7 +721,7 @@ if (g_debuglog_hash) {
 	}
 
 	if(job->coind)
-		client_do_submit(client, job, &submitvalues, extranonce2, ntime, nonce, vote);
+		client_do_submit(client, job, &submitvalues, extranonce2, ntime, nonce, vote, versionmask);
 	else
 		remote_submit(client, job, &submitvalues, extranonce2, ntime, nonce);
 

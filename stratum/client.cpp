@@ -5,7 +5,7 @@ bool client_suggest_difficulty(YAAMP_CLIENT *client, json_value *json_params)
 {
 	if(json_params->u.array.length>0)
 	{
-		double diff = client_normalize_difficulty(json_params->u.array.values[0]->u.dbl);
+		double diff = client_normalize_difficulty(json_params->u.array.values[0]->u.dbl, client);
 		uint64_t user_target = diff_to_target(diff);
 
 		if(user_target >= YAAMP_MINDIFF && user_target <= YAAMP_MAXDIFF)
@@ -52,8 +52,10 @@ bool client_subscribe(YAAMP_CLIENT *client, json_value *json_params)
 		if (json_params->u.array.values[0]->u.string.ptr)
 			strncpy(client->version, json_params->u.array.values[0]->u.string.ptr, 1023);
 
-		if (strstr(client->version, "NiceHash"))
-      client->difficulty_actual = g_stratum_nicehash_difficulty;
+		if (strstr(client->version, "NiceHash")) {
+			client->is_nicehash = true;
+			client->difficulty_actual = g_stratum_nicehash_difficulty;
+		}
 
 		if(strstr(client->version, "proxy") || strstr(client->version, "/3."))
       client->reconnectable = false;
@@ -638,7 +640,7 @@ void *client_thread(void *p)
 			b = client_send_result(client, "[]");
 
 		else if(!strcmp(method, "mining.configure"))
-			b = client_send_result(client, "false"); // ASICBOOST
+			b = client_configure(client, json_params); // ASICBOOST
 
 		else if(!strcmp(method, "mining.extranonce.subscribe"))
 		{
@@ -700,4 +702,40 @@ void *client_thread(void *p)
 	}
 
 	pthread_exit(NULL);
+}
+
+/*
+	simple implementaion of asicboost of stratum protocol
+	full spec: https://github.com/slushpool/stratumprotocol/blob/master/stratum-extensions.mediawiki
+*/
+bool client_configure(YAAMP_CLIENT *client, json_value *json_params)
+{
+	uint32_t version_mask = 0x1fffe000;
+	bool version_rolling_enabled = false;
+
+    if(json_params->u.array.length>1 && json_is_array(json_params->u.array.values[0]) && json_is_object(json_params->u.array.values[1]))
+	{
+		for (int index_array=0; index_array < json_params->u.array.values[0]->u.array.length; ++index_array) {
+			if (json_is_string(json_params->u.array.values[0]->u.array.values[index_array]) && 
+				!strcmp(json_params->u.array.values[0]->u.array.values[index_array]->u.string.ptr, "version-rolling"))
+			{
+				for (int index_object=0; index_object < json_params->u.array.values[1]->u.object.length; ++index_object) {
+					if(!strcmp(json_params->u.array.values[1]->u.object.values[index_object].name, "version-rolling.mask") &&
+						json_is_string(json_params->u.array.values[1]->u.object.values[index_object].value))
+					{
+						version_mask = strtoul(json_params->u.array.values[1]->u.object.values[index_object].value->u.string.ptr, NULL, 16);
+						version_rolling_enabled = true;
+					}
+				}
+			}
+		}
+	}
+
+	if (version_rolling_enabled)
+	{
+		return client_send_result(client, "{\"version-rolling\":true,\"version-rolling.mask\":\"%08x\"}", version_mask);
+	}
+	else {
+		return client_send_result(client, "{\"version-rolling\": false}");
+	}
 }

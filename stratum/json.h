@@ -269,6 +269,7 @@ char* json_dumps(json_value * value, int opt);
 typedef json_value json_t;
 #define json_typeof(json)      ((json)->type)
 #define json_is_array(json)    (json && json_typeof(json) == json_array)
+#define json_is_object(json)   (json && json_typeof(json) == json_object)
 #define json_is_integer(json)  (json && json_typeof(json) == json_integer)
 #define json_is_double(json)   (json && json_typeof(json) == json_double)
 #define json_is_string(json)   (json && json_typeof(json) == json_string)

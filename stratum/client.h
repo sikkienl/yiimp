@@ -53,6 +53,8 @@ public:
 	bool reconnectable;
 	bool reconnecting;
 
+	bool is_nicehash;
+
 	int userid;
 	int workerid;
 	int coinid;
@@ -148,13 +150,14 @@ bool client_find_my_ip(const char *ip);
 //////////////////////////////////////////////////////////////////////////
 
 int client_send_difficulty(YAAMP_CLIENT *client, double difficulty);
-double client_normalize_difficulty(double difficulty);
+double client_normalize_difficulty(double difficulty, YAAMP_CLIENT *client);
 
 void client_change_difficulty(YAAMP_CLIENT *client, double difficulty);
 void client_record_difficulty(YAAMP_CLIENT *client);
 void client_adjust_difficulty(YAAMP_CLIENT *client);
 
 void client_initialize_difficulty(YAAMP_CLIENT *client);
+bool client_configure(YAAMP_CLIENT *client, json_value *json_params);
 
 //////////////////////////////////////////////////////////////////////////
 

@@ -1,12 +1,20 @@
 
 #include "stratum.h"
 
-double client_normalize_difficulty(double difficulty)
+double client_normalize_difficulty(double difficulty, YAAMP_CLIENT *client)
 {
-	if(difficulty < g_stratum_min_diff) difficulty = g_stratum_min_diff;
-	else if(difficulty < 1) difficulty = floor(difficulty*1000/2)/1000*2;
-	else if(difficulty > 1) difficulty = floor(difficulty/2)*2;
-	if(difficulty > g_stratum_max_diff) difficulty = g_stratum_max_diff;
+	if (client->is_nicehash) {
+		if(difficulty < g_stratum_nicehash_min_diff) difficulty = g_stratum_nicehash_min_diff;
+		else if(difficulty < 1) difficulty = floor(difficulty*1000/2)/1000*2;
+		else if(difficulty > 1) difficulty = floor(difficulty/2)*2;
+		if(difficulty > g_stratum_nicehash_max_diff) difficulty = g_stratum_nicehash_max_diff;
+	}
+	else {
+		if(difficulty < g_stratum_min_diff) difficulty = g_stratum_min_diff;
+		else if(difficulty < 1) difficulty = floor(difficulty*1000/2)/1000*2;
+		else if(difficulty > 1) difficulty = floor(difficulty/2)*2;
+		if(difficulty > g_stratum_max_diff) difficulty = g_stratum_max_diff;
+	}
 	return difficulty;
 }
 
@@ -32,7 +40,7 @@ void client_change_difficulty(YAAMP_CLIENT *client, double difficulty)
 {
 	if(difficulty <= 0) return;
 
-	difficulty = client_normalize_difficulty(difficulty);
+	difficulty = client_normalize_difficulty(difficulty, client);
 	if(difficulty <= 0) return;
 
 //	debuglog("change diff to %f %f\n", difficulty, client->difficulty_actual);
@@ -116,7 +124,7 @@ void client_initialize_difficulty(YAAMP_CLIENT *client)
 		diff_to_target(client->share_target, client->difficulty_actual);
 	}
 	else {
-		double diff = client_normalize_difficulty(atof(p+2));
+		double diff = client_normalize_difficulty(atof(p+2), client);
 		uint64_t user_target = diff_to_target(diff);
 
 	//	debuglog("%016llx target\n", user_target);
