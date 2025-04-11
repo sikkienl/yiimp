@@ -92,15 +92,15 @@ class MarketController extends CommonController
 			BackendUpdatePoolBalances($coin->id);
 		}
 
-		$exchange = new db_exchange;
-		$exchange->market = $market->name;
-		$exchange->coinid = $coin->id;
-		$exchange->send_time = time();
-		$exchange->quantity = $amount;
-		$exchange->price_estimate = $coin->price;
-		$exchange->status = 'waiting';
-		$exchange->tx = $tx;
-		$exchange->save();
+		 $exchange_deposit = new db_exchange_deposit;
+		 $exchange_deposit->market = $market->name;
+		 $exchange_deposit->coinid = $coin->id;
+		 $exchange_deposit->send_time = time();
+		 $exchange_deposit->quantity = $amount;
+		 $exchange_deposit->price_estimate = $coin->price;
+		 $exchange_deposit->status = 'waiting';
+		 $exchange_deposit->tx = $tx;
+		 $exchange_deposit->save();
 
 		$this->redirect(array('admin/coin', 'id'=>$coin->id));
 	}
