@@ -32,8 +32,11 @@ foreach(yaamp_get_algos() as $algo)
 
 	$user_pool_rate = yaamp_user_rate($userid, $algo);
 	$pool_hash = yaamp_pool_rate_pow($algo);
+	$user_ttf = 0;
 
-	$user_ttf  = $user_pool_rate ? $coin->difficulty * 0x100000000 / $pool_hash : 0;
+	if ($pool_hash != 0) {
+		$user_ttf  = $user_pool_rate ? $coin->difficulty * 0x100000000 / $pool_hash : 0;
+	}
 	$user_ttf  = $user_ttf ? sectoa2($user_ttf) : '-';
 
 	$user_pool_rate = $user_pool_rate? Itoa2($user_pool_rate).'h/s': '-';

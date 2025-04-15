@@ -177,18 +177,18 @@ function BackendBlockNew($coin, $db_block)
 	
 	// todo: optimize all queries by re-ordering where-conditions to lower occurence of possible mysql deadlock-error
 	try {
-		dborun("DELETE FROM shares WHERE algo=:algo AND $sqlCond AND solo".(($is_solo)?"=1":"!=1"),
-				array(':algo'=>$coin->algo));
-//		dborun("UPDATE shares SET blocknumber = ".$db_block->height.", blockrewarded = ".$db_block->height." WHERE algo=:algo AND $sqlCond AND solo".(($is_solo)?"=1":"!=1"),
+//		dborun("DELETE FROM shares WHERE algo=:algo AND $sqlCond AND solo".(($is_solo)?"=1":"!=1"),
 //				array(':algo'=>$coin->algo));
+		dborun("UPDATE shares SET pid=-1, blocknumber = ".$db_block->height.",blockrewarded = ".$db_block->height." WHERE algo=:algo AND $sqlCond AND solo".(($is_solo)?"=1":"!=1"),
+				array(':algo'=>$coin->algo));
 	} catch (CDbException $e) {
 
 		debuglog("unable to update shares $sqlCond retrying...");
 		sleep(1);
-		dborun("DELETE FROM shares WHERE algo=:algo AND $sqlCond AND solo".(($is_solo)?"=1":"!=1"),
-				array(':algo'=>$coin->algo));
-//		dborun("UPDATE shares SET blocknumber = ".$db_block->height.", blockrewarded = ".$db_block->height." WHERE algo=:algo AND $sqlCond AND solo".(($is_solo)?"=1":"!=1"),
+//		dborun("DELETE FROM shares WHERE algo=:algo AND $sqlCond AND solo".(($is_solo)?"=1":"!=1"),
 //				array(':algo'=>$coin->algo));
+		dborun("UPDATE shares SET pid=-1, blocknumber = ".$db_block->height.",blockrewarded = ".$db_block->height." WHERE algo=:algo AND $sqlCond AND solo".(($is_solo)?"=1":"!=1"),
+				array(':algo'=>$coin->algo));
 		// [errorInfo] => array(0 => 'HY000', 1 => 1205, 2 => 'Lock wait timeout exceeded; try restarting transaction')
 		// [*:message] => 'CDbCommand failed to execute the SQL statement: SQLSTATE[HY000]: General error: 1205 Lock wait timeout exceeded; try restarting transaction'
 	} 
