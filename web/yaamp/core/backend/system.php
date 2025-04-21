@@ -99,9 +99,9 @@ function consolidateOldShares()
 	dborun("DELETE FROM shares WHERE time < $delay AND valid = 0");
 
 	$t1 = time() - 48*3600;
-	$list = dbolist("SELECT coinid, userid, workerid, algo, AVG(time) AS time, SUM(difficulty) AS difficulty, MAX(share_diff) AS share_diff, blocknumber, blockrewarded ".
-		"FROM shares WHERE pid > 0 AND time < $t1 AND valid ".
-		"GROUP BY coinid, userid, workerid, algo, blocknumber, blockrewarded ORDER BY coinid, userid");
+	$list = dbolist("SELECT coinid, userid, workerid, algo, AVG(time) AS time, SUM(difficulty) AS difficulty, MAX(share_diff) AS share_diff, MAX(blocknumber) as max_blocknumber, blockrewarded ".
+		"FROM shares WHERE pid != 0 AND time < $t1 AND valid ".
+		"GROUP BY coinid, userid, workerid, algo, blockrewarded ORDER BY coinid, userid");
 	$pruned = 0;
 	foreach ($list as $row) {
 		$share = new db_shares;
@@ -113,14 +113,14 @@ function consolidateOldShares()
 		$share->time = (int) $row['time'];
 		$share->difficulty = $row['difficulty'];
 		$share->share_diff = $row['share_diff'];
-		$share->blocknumber = $row['blocknumber'];
+		$share->blocknumber = $row['max_blocknumber'];
 		$share->blockrewarded = $row['blockrewarded'];
 		$share->valid = 1;
 		$share->pid = 0;
 		if ($share->save()) {
             if (!is_null($row['blockrewarded'])) {
-		        $pruned += dborun("DELETE FROM shares WHERE blocknumber=:blocknumber AND blockrewarded=:blockrewarded AND coinid=:coinid AND pid > 0 AND time < $t1 AND userid=:userid AND workerid=:worker", array(
-		            ':blocknumber' => $row['blocknumber'],
+		        $pruned += dborun("DELETE FROM shares WHERE blocknumber <= :blocknumber AND blockrewarded=:blockrewarded AND coinid=:coinid AND pid != 0 AND time < $t1 AND userid=:userid AND workerid=:worker", array(
+		            ':blocknumber' => $row['max_blocknumber'],
 		            ':blockrewarded' => $row['blockrewarded'],
 		            ':coinid' => $row['coinid'],
 		            ':userid' => $row['userid'],
@@ -128,8 +128,8 @@ function consolidateOldShares()
 		        ));
             }
             else {
-                $pruned += dborun("DELETE FROM shares WHERE blocknumber=:blocknumber AND blockrewarded IS NULL AND coinid=:coinid AND pid > 0 AND time < $t1 AND userid=:userid AND workerid=:worker", array(
-                   ':blocknumber' => $row['blocknumber'],
+                $pruned += dborun("DELETE FROM shares WHERE blocknumber <= :blocknumber AND blockrewarded IS NULL AND coinid=:coinid AND pid != 0 AND time < $t1 AND userid=:userid AND workerid=:worker", array(
+                   ':blocknumber' => $row['max_blocknumber'],
                    ':coinid' => $row['coinid'],
                    ':userid' => $row['userid'],
                    ':worker' => $row['workerid'],
@@ -161,7 +161,14 @@ function BackendCleanDatabase()
 	dborun("delete from hashrenter where time<$delay");
 	dborun("delete from balanceuser where time<$delay");
 	dborun("delete from exchange_deposit where send_time<$delay");
+
+	// drop shares for removed coins
 	dborun("DELETE FROM shares WHERE time<$delay AND coinid NOT IN (select id from coins)");
+
+	// drop shares for blocks already processed
+	dborun("DELETE FROM shares WHERE time<$delay AND blockrewarded > 0");
+
+	// clear workerid for disconnected workers
 	dborun("UPDATE shares SET workerid = 0 WHERE workerid > 0 AND workerid NOT IN (SELECT id FROM workers)");
 
 	consolidateOldShares();
