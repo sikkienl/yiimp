@@ -56,8 +56,8 @@ function BackendPricesUpdate()
 				$base_coin = getdbosql('db_coins', "symbol='{$market->base_coin}'");
 				if($base_coin)
 				{
-					$coin->price *= $base_coin->price;
-					$coin->price2 *= $base_coin->price;
+					$coin->price = $market->price * $base_coin->price;
+					$coin->price2 = $market->price2 * $base_coin->price;
 				}
 			}
 		}
@@ -507,6 +507,7 @@ function updateXeggexMarkets()
 	if(!$coin) { continue; }
 	$symbol = $coin->getOfficialSymbol();
 	$pair = strtolower($symbol).'_btc';
+	$pair_reverse = 'btc_'.strtolower($symbol);
 
 	if (!empty($market->base_coin))
 	{
@@ -536,6 +537,24 @@ function updateXeggexMarkets()
 			// debuglog("$exchange: $pair price updated to {$market->price}");
 			break;
 		}
+		else if ($ticker_id === $pair_reverse) {
+			$tmpbid = ($ticker['ask'] == 0)?0 : (1 / $ticker['ask']);
+			$tmpask = ($ticker['bid'] == 0)?0 : (1 / $ticker['bid']);
+
+			$price2 = ($tmpbid+$tmpask)/2;
+			$market->price2 = AverageIncrement($market->price2, $price2);
+			$market->price = AverageIncrement($market->price, $tmpbid);
+			$market->pricetime = time(); // $ticker->timestamp "2018-08-31T12:48:56Z"
+			$market->save();
+			if (empty($coin->price) && $tmpask) {
+				$coin->price = $market->price;
+				$coin->price2 = $price2;
+				$coin->save();
+			}
+			// debuglog("$exchange: $pair_reverse price updated to {$market->price}");
+			break;
+		}
+
 	}
     }
 }
@@ -558,6 +577,7 @@ function updateNonKYCMarkets()
 	if(!$coin) { continue; }
 	$symbol = $coin->getOfficialSymbol();
 	$pair = strtolower($symbol).'_btc';
+	$pair_reverse = 'btc_'.strtolower($symbol);
 
 	if (!empty($market->base_coin)) {
 		$pair = strtolower($symbol.'_'.$market->base_coin);
@@ -585,6 +605,24 @@ function updateNonKYCMarkets()
 			// debuglog("$exchange: $pair price updated to {$market->price}");
 			break;
 		}
+		else if ($ticker_id === $pair_reverse) {
+			$tmpbid = ($ticker['ask'] == 0)?0 : (1 / $ticker['ask']);
+			$tmpask = ($ticker['bid'] == 0)?0 : (1 / $ticker['bid']);
+
+			$price2 = ($tmpbid+$tmpask)/2;
+			$market->price2 = AverageIncrement($market->price2, $price2);
+			$market->price = AverageIncrement($market->price, $tmpbid);
+			$market->pricetime = time(); // $ticker->timestamp "2018-08-31T12:48:56Z"
+			$market->save();
+			if (empty($coin->price) && $tmpask) {
+				$coin->price = $market->price;
+				$coin->price2 = $price2;
+				$coin->save();
+			}
+			// debuglog("$exchange: $pair_reverse price updated to {$market->price}");
+			break;
+		}
+
 	}
     }
 }

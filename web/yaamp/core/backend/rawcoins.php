@@ -72,6 +72,17 @@ function updateRawCoinExchange($marketname)
 					foreach($list as $key=>$data) {
 						$base = strtoupper($data->quote_currency);
 						$symbol = strtoupper($data->base_currency);
+						if (strtoupper($symbol) == 'BTC') {
+							if ((strtoupper($base) === 'USDT') ||
+							    (strtoupper($base) === 'USDC')) {
+									$symbol = strtoupper($data->quote_currency);
+									$base = strtoupper($data->base_currency);
+							}
+							else {
+								continue;
+							}
+						}
+
 						updateRawCoin($marketname, $symbol, $symbol, ($base == 'BTC')?null:$base);
 					}
 				}
@@ -125,8 +136,18 @@ function updateRawCoinExchange($marketname)
 					dborun("UPDATE markets SET deleted=true WHERE name='xeggex'");
 					foreach ($list as $tickers) {
 						$base = strtoupper($tickers['target_currency']);
-						if (strtoupper($base) !== 'BTC'||strtoupper($base) !== 'USDT')
 						$symbol = strtoupper($tickers['base_currency']);
+						if (strtoupper($symbol) == 'BTC') {
+							if ((strtoupper($base) === 'USDT') ||
+							    (strtoupper($base) === 'USDC')) {
+									$symbol = strtoupper($tickers['target_currency']);
+									$base = strtoupper($tickers['base_currency']);
+							}
+							else {
+								continue;
+							}
+						}
+
 						updateRawCoin('xeggex', $symbol, $symbol, ($base == 'BTC')?null:$base);
 					}
 				}
@@ -140,8 +161,18 @@ function updateRawCoinExchange($marketname)
 					dborun("UPDATE markets SET deleted=true WHERE name='nonkyc'");
 					foreach ($list as $tickers) {
 						$base = strtoupper($tickers['target_currency']);
-						if (strtoupper($base) !== 'BTC'||strtoupper($base) !== 'USDT')
 						$symbol = strtoupper($tickers['base_currency']);
+						if (strtoupper($symbol) == 'BTC') {
+							if ((strtoupper($base) === 'USDT') ||
+							    (strtoupper($base) === 'USDC')) {
+									$symbol = strtoupper($tickers['target_currency']);
+									$base = strtoupper($tickers['base_currency']);
+							}
+							else {
+								continue;
+							}
+						}
+
 						updateRawCoin('nonkyc', $symbol, $symbol, ($base == 'BTC')?null:$base);
 					}
 				}
