@@ -17,7 +17,7 @@ FROM baseimage2204 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=664c6a372bd27827cf8a3759551d61230cae0c0f
+ARG CURRENT_GITHUB_COMMIT=cc529634484591e1ceb57b6168b93c3671e27335
 
 RUN git clone https://github.com/DigiByte-Core/digibyte
 WORKDIR /digibyte
