@@ -17,7 +17,7 @@ FROM baseimage2204 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=bb054c07756cd8577816b19b06c634c7819241e6
+ARG CURRENT_GITHUB_COMMIT=50d63f3d28fcea43c36be1ad32dc58f7c82d0350
 
 RUN git clone https://github.com/HootChain/HootChain
 WORKDIR /HootChain

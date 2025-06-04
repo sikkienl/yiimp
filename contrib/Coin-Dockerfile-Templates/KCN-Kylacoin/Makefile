@@ -1,7 +1,7 @@
 # change image name
 image_name=kylacoin
 # version tag
-version=v4.0.0
+version=v4.1.0
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 

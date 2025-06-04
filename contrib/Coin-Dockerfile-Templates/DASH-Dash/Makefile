@@ -1,7 +1,7 @@
 # change image name
 image_name=dash
 # version tag
-version=v22.1.1
+version=v22.1.2
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 

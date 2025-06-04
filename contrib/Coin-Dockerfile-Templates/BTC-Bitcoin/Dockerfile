@@ -17,7 +17,7 @@ FROM baseimage2204 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=32efe850438ef22e2de39e562af557872a402c31
+ARG CURRENT_GITHUB_COMMIT=f490f5562d4b20857ef8d042c050763795fd43da
 
 RUN git clone https://github.com/bitcoin/bitcoin
 WORKDIR /bitcoin
@@ -28,10 +28,11 @@ RUN git checkout $CURRENT_GITHUB_COMMIT
 # apply patch if needed
 #COPY docker.patch /tmp/
 #RUN patch -p1 < /tmp/docker.patch
-RUN cd depends && make && cd .. && \
-    ./autogen.sh && \
-    ./configure --prefix `pwd`/depends/x86_64-pc-linux-gnu --with-gui=no --disable-tests --disable-bench --enable-cxx --disable-shared --with-pic CPPFLAGS=-DUSE_UPNP=0 && make clean && make && \
-    strip src/bitcoind && cp src/bitcoind /usr/bin && \
+#RUN cd depends && make && cd .. && \
+RUN cd depends && make && cd ..
+RUN cmake -B build && \
+    cmake --build build && \
+    strip ./build/bin/bitcoind && cp ./build/bin/bitcoind /usr/bin && \
     cd / && rm /bitcoin -rf && \
     rm ~/.cache -rf && rm ~/.ccache -rf && rm ~/.cargo -rf
 

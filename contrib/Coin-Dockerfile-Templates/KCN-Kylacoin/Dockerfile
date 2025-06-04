@@ -17,7 +17,7 @@ FROM baseimage2204 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=fe6f2ad64ffcc4eae213c378336cf574f68b8672
+ARG CURRENT_GITHUB_COMMIT=71334b77c70fcfe5290b63f02b310b15ad8b9359
 
 RUN git clone https://github.com/kylacoin/kylacoin
 WORKDIR /kylacoin
