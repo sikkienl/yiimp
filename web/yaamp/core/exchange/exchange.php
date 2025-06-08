@@ -16,6 +16,7 @@ function strip_data($data)
 require_once("bitstamp.php");
 require_once("cexio.php");
 require_once("exbitron.php");
+require_once("nestex.php");
 require_once("gateio.php");
 require_once("kraken.php");
 require_once("poloniex.php");
@@ -64,6 +65,8 @@ function getMarketUrl($coin, $marketName)
 		$url = "https://cex.io/trade/{$symbol}-{$base}";
 	else if($market == 'exbitron')
 		$url = "https://app.exbitron.com/exchange/?market={$symbol}-{$base}";
+	else if($market == 'nestex')
+		$url = "https://trade.nestex.one/spot/{$symbol}";
 	else if($market == 'gateio')
 		$url = "https://gate.io/trade/{$symbol}_{$base}";
 	else if($market == 'hitbtc')

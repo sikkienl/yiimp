@@ -84,6 +84,9 @@ function BackendPricesUpdateExchange($exchangename)
 		case 'exbitron':
 			updateExbitronMarkets();
 		break;
+		case 'nestex':
+			updateNestexMarkets();
+		break;
 		case 'yobit':
 			updateYobitMarkets();
 		break;
@@ -375,6 +378,70 @@ function updateExbitronMarkets() {
 		}
 	}
 }
+
+function updateNestexMarkets()
+{
+	debuglog(__FUNCTION__);
+
+	$exchange = 'nestex';
+	debuglog("====== $exchange =======");
+
+	if (exchange_get($exchange, 'disabled')) return;
+
+	$list = getdbolist('db_markets', "name LIKE '$exchange%'");
+	if (empty($list)) return;
+
+	// Get full ticker list from NestEX
+	$data = nestex_api_query();
+	if (!is_array($data)) return;
+
+	foreach ($list as $market)
+	{
+		$coin = getdbo('db_coins', $market->coinid);
+		if (!$coin) continue;
+
+		$symbol = strtoupper($coin->getOfficialSymbol());
+		$pair = $symbol . '_USDT'; // <- USDT is fixed
+
+		if (market_get($exchange, $symbol, "disabled"))
+		{
+			$market->disabled = 1;
+			$market->message = 'disabled from settings';
+			$market->save();
+			continue;
+		}
+
+		foreach ($data as $ticker)
+		{
+			if (!isset($ticker['ticker_id'])) continue;
+
+			if (strtoupper($ticker['ticker_id']) === $pair)
+			{
+				$bid = (float)$ticker['bid'];
+				$ask = (float)$ticker['ask'];
+
+				if (!$bid || !$ask) continue;
+
+				$price2 = ($bid + $ask) / 2;
+
+				$market->price2 = AverageIncrement($market->price2, $price2);
+				$market->price  = AverageIncrement($market->price, $bid);
+				$market->pricetime = time();
+				$market->save();
+
+				if (empty($coin->price) && $ask)
+				{
+					$coin->price = $market->price;
+					$coin->price2 = $price2;
+					$coin->save();
+				}
+
+				break;
+			}
+		}
+	}
+}
+
 
 /* api-access functions missing
 function updateP2PB2BMarkets()
