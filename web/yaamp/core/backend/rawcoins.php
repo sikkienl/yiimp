@@ -9,6 +9,7 @@ function updateRawcoins()
 	// exit();
 	exchange_set_default('binance', 'disabled', true);
 	exchange_set_default('exbitron', 'disabled', false);
+	exchange_set_default('nestex', 'disabled', false);
 	exchange_set_default('hitbtc', 'disabled', true);
 	exchange_set_default('kraken', 'disabled', true);
 	exchange_set_default('kucoin', 'disabled', true);
@@ -88,6 +89,36 @@ function updateRawCoinExchange($marketname)
 				}
 			}
 		break;
+
+		case 'nestex':
+			if (!exchange_get($marketname, 'disabled'))
+			{
+				$list = nestex_api_query(); // fetch all tickers
+				if (is_array($list) && !empty($list))
+				{
+					// Optional debug
+					// debuglog(json_encode($list));
+
+					dborun("UPDATE markets SET deleted=true WHERE name='$marketname'");
+
+					foreach ($list as $data)
+					{
+						if (empty($data['base_currency']) || empty($data['target_currency']))
+							continue;
+
+						$symbol = strtoupper($data['base_currency']); // e.g., BTC
+						$base   = strtoupper($data['target_currency']); // e.g., USDT
+
+						// NestEX is USDT-only, skip anything else just in case
+						if ($base !== 'USDT')
+							continue;
+
+						updateRawCoin($marketname, $symbol, $symbol, $base);
+					}
+				}
+			}
+			break;
+
 
 		/* P2PB2B code not working as api-access functions missing 
 		case 'p2pb2b':
