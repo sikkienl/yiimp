@@ -17,10 +17,10 @@ FROM baseimage2204 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=738d339f6179d623089fe03665966dd986fead30
+ARG CURRENT_GITHUB_COMMIT=8abe9f2766a8c5fb98164d9a28a4c64c91d6116e
 
-RUN git clone https://github.com/craftcoin2013/craftcoin
-WORKDIR /craftcoin
+RUN git clone https://github.com/craftcoin2013/craftcoinV3/
+WORKDIR /craftcoinV3/
 
 # use the specific commit known to work
 RUN git checkout $CURRENT_GITHUB_COMMIT
@@ -34,7 +34,7 @@ RUN cd depends && chmod +x * && make && cd .. && \
     ./autogen.sh && \
     ./configure --prefix `pwd`/depends/x86_64-pc-linux-gnu --with-gui=no --disable-tests --disable-bench --disable-man && make clean && make && \
     strip src/craftcoind && cp src/craftcoind /usr/bin && \
-    cd / && rm /craftcoin -rf && \
+    cd / && rm /craftcoinV3/ -rf && \
     rm ~/.cache -rf && rm ~/.ccache -rf && rm ~/.cargo -rf
 
 # blocknotify

@@ -1,7 +1,7 @@
 # change image name
-image_name=craftcoin
+image_name=kitehcoin
 # version tag
-version=v3.0.3
+version=kitehcore
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 
@@ -12,8 +12,8 @@ STRATUM_UPDATEPASS=tu8tu5
 walletuserid=2000
 walletgroupid=2000
 user_path=/home/walletuser
-wallet_directory=.craftcoin
-wallet_daemon=craftcoind
+wallet_directory=.kitehcoin
+wallet_daemon=kitehcoind
 
 #change container registry path and credentials
 registry=ghcr.io/<username>
@@ -21,7 +21,7 @@ registry_username=xxx
 registry_password=xxx
 
 gitclone:
-	git clone https://github.com/craftcoin2013/craftcoinV3/
+	git clone https://github.com/kitehcoin/Kitehcoin-core
 
 build:
 	podman build --tag ${image_name} --build-arg STRATUM_UPDATEPASS=${STRATUM_UPDATEPASS} --build-arg walletuserid=${walletuserid} --build-arg walletgroupid=${walletgroupid} -f Dockerfile

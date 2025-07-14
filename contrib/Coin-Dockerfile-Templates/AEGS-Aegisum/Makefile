@@ -1,7 +1,7 @@
 # change image name
 image_name=aegisum
 # version tag
-version=v2.1
+version=v2.1.6
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 

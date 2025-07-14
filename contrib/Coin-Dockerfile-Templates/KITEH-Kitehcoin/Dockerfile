@@ -12,15 +12,16 @@ RUN apt-get update && \
     libtool pkg-config && \
     apt-get install -y --no-install-recommends mc psmisc wget protobuf-compiler libminiupnpc-dev g++ curl cmake bison libevent-dev libboost-dev libxml2-dev python3 flex dumb-init && \
     apt-get clean
+RUN apt-get install -y --no-install-recommends autoconf-archive libdb5.3++-dev libdb5.3++ libdb5.3-dev
 
 FROM baseimage2204 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=20b9864330f3d38737b88f8c81952e5a709de4e5
+ARG CURRENT_GITHUB_COMMIT=7d4f06ac0fef19606efa706ef475ae884e4d48d4
 
-RUN git clone https://github.com/Aegisum/aegisum-core
-WORKDIR /aegisum-core
+RUN git clone https://github.com/kitehcoin/Kitehcoin-core
+WORKDIR /Kitehcoin-core
 
 # use the specific commit known to work
 RUN git checkout $CURRENT_GITHUB_COMMIT
@@ -29,12 +30,10 @@ RUN git checkout $CURRENT_GITHUB_COMMIT
 #COPY docker.patch /tmp/
 #RUN patch -p1 < /tmp/docker.patch
 
-RUN cd depends && chmod +x config.* && make && cd .. && \
-    chmod +x autogen.sh && chmod +x share/genbuild.sh && \
-    ./autogen.sh && \
-    ./configure --prefix `pwd`/depends/x86_64-pc-linux-gnu --with-gui=no --disable-tests --disable-bench --enable-cxx --disable-shared --with-pic CPPFLAGS=-DUSE_UPNP=0 && make clean && make && \
-    strip src/aegisumd && cp src/aegisumd /usr/bin && \
-    cd / && rm /aegisum-core -rf && \
+RUN ./autogen.sh && \
+    ./configure --with-gui=no --disable-tests --disable-bench && make clean && make && \
+    strip src/kitehcoind && cp src/kitehcoind /usr/bin && \
+    cd / && rm /Kitehcoin-core -rf && \
     rm ~/.cache -rf && rm ~/.ccache -rf && rm ~/.cargo -rf
 
 # blocknotify

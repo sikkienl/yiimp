@@ -1,7 +1,7 @@
 # change image name
 image_name=aipg
 # version tag
-version=v1.3.0
+version=v1.4.0
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 
