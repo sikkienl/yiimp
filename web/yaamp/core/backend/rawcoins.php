@@ -160,31 +160,7 @@ function updateRawCoinExchange($marketname)
 				}
 			}
 			break; */
-		case 'xeggex':
-			if (!exchange_get('xeggex', 'disabled')) {
-				$list = xeggex_api_query('tickers','','array');
-				if(is_array($list) && !empty($list)) {
-					dborun("UPDATE markets SET deleted=true WHERE name='xeggex'");
-					foreach ($list as $tickers) {
-						$base = strtoupper($tickers['target_currency']);
-						$symbol = strtoupper($tickers['base_currency']);
-						if (strtoupper($symbol) == 'BTC') {
-							if ((strtoupper($base) === 'USDT') ||
-							    (strtoupper($base) === 'USDC')) {
-									$symbol = strtoupper($tickers['target_currency']);
-									$base = strtoupper($tickers['base_currency']);
-							}
-							else {
-								continue;
-							}
-						}
 
-						updateRawCoin('xeggex', $symbol, $symbol, ($base == 'BTC')?null:$base);
-					}
-				}
-			}
-		break;
-	
 		case 'nonkyc':
 			if (!exchange_get('nonkyc', 'disabled')) {
 				$list = nonkyc_api_query('tickers','','array');

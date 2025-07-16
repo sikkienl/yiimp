@@ -149,7 +149,6 @@ class CronjobController extends CommonController
 				doKuCoinTrading();
 				doYobitTrading();
 				doTradeogreTrading();
-				doXeggexTrading();
 				break;
 
 			case 3:

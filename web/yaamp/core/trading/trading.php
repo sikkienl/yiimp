@@ -9,7 +9,6 @@ require_once('hitbtc_trading.php');
 require_once('kucoin_trading.php');
 require_once('tradeogre_trading.php');
 require_once('nonkyc_trading.php');
-require_once('xeggex_trading.php');
 
 function cancelExchangeOrder($order=false)
 {
@@ -39,9 +38,6 @@ function cancelExchangeOrder($order=false)
 				break;
 			case 'nonkyc':
 				doNonkycCancelOrder($order->uuid);
-				break;
-			case 'xeggex':
-				doXeggexCancelOrder($order->uuid);
 				break;
 		}
 }
@@ -103,11 +99,6 @@ function runExchange($exchangeName=false)
 			case 'nonkyc':
 				doNonkycTrading(true);
 				updateNonkycMarkets();
-				break;
-
-			case 'xeggex':
-				doXeggexTrading(true);
-				updateXeggexMarkets();
 				break;
 
 			case 'tradeogre':

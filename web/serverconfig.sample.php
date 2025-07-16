@@ -2,6 +2,51 @@
 
 ini_set('date.timezone', 'UTC');
 
+// add defines with YIIMP_ scheme to get rid of YAAMP_ defines over time
+
+define('YIIMP_MEMCACHE_HOST', '127.0.0.1');
+define('YIIMP_MEMCACHE_PORT', 11211);
+
+define('YIIMP_LOGS', '/var/www/log');
+define('YIIMP_HTDOCS', '/var/www');
+define('YIIMP_BIN', '/var/www/bin');
+
+define('YIIMP_DBHOST', 'localhost');
+define('YIIMP_DBNAME', 'yaamp');
+define('YIIMP_DBUSER', 'root');
+define('YIIMP_DBPASSWORD', 'password');
+
+define('YIIMP_SITE_URL', 'yiimp.ccminer.org');
+define('YIIMP_STRATUM_URL', YIIMP_SITE_URL); // change if your stratum server is on a different host
+define('YIIMP_SITE_NAME', 'YiiMP');
+
+define('YIIMP_PRODUCTION', true);
+
+define('YIIMP_LIMIT_ESTIMATE', false);
+
+define('YIIMP_FEES_SOLO', 1);
+define('YIIMP_FEES_MINING', 0.5);
+define('YIIMP_FEES_EXCHANGE', 2);
+define('YIIMP_FEES_RENTING', 2);
+define('YIIMP_TXFEE_RENTING_WD', 0.002);
+define('YIIMP_PAYMENTS_FREQ', 3*60*60);
+define('YIIMP_PAYMENTS_MINI', 0.001);
+
+define('YIIMP_ALLOW_EXCHANGE', false);
+
+define('YIIMP_BTCADDRESS', '1Auhps1mHZQpoX4mCcVL8odU81VakZQ6dR');
+
+define('YIIMP_ADMIN_EMAIL', 'yiimp@spam.la');
+define('YIIMP_ADMIN_USER', 'yiimpadmin');
+define('YIIMP_ADMIN_PASS', 'set-a-password');
+define('YIIMP_ADMIN_IP', ''); // samples: "80.236.118.26,90.234.221.11" or "10.0.0.1/8"
+define('YIIMP_ADMIN_WEBCONSOLE', true);
+define('YIIMP_CREATE_NEW_COINS', true);
+define('YIIMP_NOTIFY_NEW_COINS', false);
+define('YIIMP_DEFAULT_ALGO', 'x11');
+
+// old style 'YAAMP_'
+
 define('YAAMP_LOGS', '/var/www/log');
 define('YAAMP_HTDOCS', '/var/www');
 define('YAAMP_BIN', '/var/www/bin');
@@ -102,9 +147,6 @@ define('EXCH_YOBIT_SECRET', '');
 
 define('EXCH_NONKYC_KEY', '');
 define('EXCH_NONKYC_SECRET', '');
-
-define('EXCH_XEGGEX_KEY', '');
-define('EXCH_XEGGEX_SECRET', '');
 
 // Automatic withdraw to Yaamp btc wallet if btc balance > 0.3
 define('EXCH_AUTO_WITHDRAW', 0.3);
