@@ -10,6 +10,8 @@ use yii\bootstrap5\Html;
 use yii\bootstrap5\Nav;
 use yii\bootstrap5\NavBar;
 
+use app\models\Mining;
+
 AppAsset::register($this);
 
 $pageTitle = empty($this->title) ? YAAMP_SITE_NAME : YAAMP_SITE_NAME." - ".$this->title;
@@ -38,6 +40,12 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
         'brandUrl' => Yii::$app->homeUrl,
         'options' => ['class' => 'navbar-expand-md navbar-dark bg-dark fixed-top']
     ]);
+
+    $mining = Mining::find()->one();
+	$nextpayment = date('H:i T', $mining->last_payout+YAAMP_PAYMENTS_FREQ);
+	$eta = ($mining->last_payout+YAAMP_PAYMENTS_FREQ) - time();
+	$eta_mn = 'in '.round($eta / 60).' minutes';
+
     echo Nav::widget([
         'options' => ['class' => 'navbar-nav'],
         'items' => [
@@ -48,7 +56,7 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
             ['label' => 'Miners', 'url' => ['/site/miners']],
             ['label' => 'API', 'url' => ['/site/api']],
             ['label' => 'Explorers', 'url' => ['/explorer']],
-            (is_null(Yii::$app->user->identity))
+            ((is_null(Yii::$app->user->identity))
                 ? ['label' => 'Login', 'url' => ['/site/login']]
                 : '<li class="nav-item">'
                     . Html::beginForm(['/site/logout'])
@@ -57,11 +65,13 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
                         ['class' => 'nav-link btn btn-link logout']
                     )
                     . Html::endForm()
-                    . '</li>'
+                    . '</li>'),
         ]
     ]);
+    echo Html::tag('div', 'Next Payout: '.$nextpayment, 
+                    ['class' => 'navbar-text ms-auto' ]);
     NavBar::end();
-    ?>
+   ?>
 </header>
 
 <main id="main" class="flex-shrink-0" role="main">

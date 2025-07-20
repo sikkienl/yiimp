@@ -17,8 +17,12 @@ class AppAsset extends AssetBundle
         'css/table.css',
     ];
     public $js = [
-        'js/auto_refresh.js',
-        'js/jquery.tablesorter.js'
+        'js/jquery.tablesorter.js',
+        'js/jqplot/jquery.jqplot.js',
+        'js/jqplot/plugins/jqplot.barRenderer.js',
+        'js/jqplot/plugins/jqplot.dateAxisRenderer.js',
+        'js/jqplot/plugins/jqplot.highlighter.js',
+        'js/jqplot/plugins/jqplot.cursor.js',
     ];
     public $depends = [
         'yii\web\YiiAsset',
