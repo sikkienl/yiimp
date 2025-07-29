@@ -1,6 +1,7 @@
 <?php
 namespace app\components\rpc;
 
+use yii;
 use app\components\rpc\iRPCConnector;
 
 class cBitcoinRPC implements iRPCConnector
@@ -149,8 +150,8 @@ class cBitcoinRPC implements iRPCConnector
 
 		if (isset($this->response['error']) && $this->response['error']) {
 			// store wallet error
-			$code = arraySafeVal($this->response['error'], 'code', '');
-			$message = arraySafeVal($this->response['error'], 'message', '');
+			$code = Yii::$app->ConversionUtils->arraySafeVal($this->response['error'], 'code', '');
+			$message = Yii::$app->ConversionUtils->arraySafeVal($this->response['error'], 'message', '');
 			$this->error = "error $code: ".strtolower($message);
 		}
 		elseif ($this->status != 200) {

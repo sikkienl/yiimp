@@ -88,6 +88,9 @@ $config = [
         'ConversionUtils' => [
             'class' => 'app\components\ConversionUtils',
         ],
+        'ExplorerUtils' => [
+            'class' => 'app\components\ExplorerUtils',
+        ],
     ],
     'params' => $params,
 ];

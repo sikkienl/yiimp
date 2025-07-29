@@ -1,5 +1,10 @@
 <?php
 
+use yii\bootstrap5\ActiveForm;
+use yii\bootstrap5\Html;
+
+/** @var yii\web\View $this */
+
 $algo = Yii::$app->session->get('yaamp-algo');
 $algo_unit = 'Mh';
 $algo_factor = Yii::$app->YiimpUtils->algo_mBTC_factor($algo);

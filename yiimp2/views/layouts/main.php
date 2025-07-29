@@ -46,27 +46,42 @@ $this->registerLinkTag(['rel' => 'icon', 'type' => 'image/x-icon', 'href' => Yii
 	$eta = ($mining->last_payout+YAAMP_PAYMENTS_FREQ) - time();
 	$eta_mn = 'in '.round($eta / 60).' minutes';
 
-    echo Nav::widget([
-        'options' => ['class' => 'navbar-nav'],
-        'items' => [
+    $items_navbar = [
             ['label' => 'Home', 'url' => ['/site/index']],
             ['label' => 'Pool', 'url' => ['/site/mining']],
             ['label' => 'Wallet', 'url' => ['/?address=']],
-            ['label' => 'Graphs', 'url' => ['/stats']],
+            ['label' => 'Graphs', 'url' => ['/stats'], 'active' => in_array(\Yii::$app->controller->id, ['stats']),],
             ['label' => 'Miners', 'url' => ['/site/miners']],
             ['label' => 'API', 'url' => ['/site/api']],
-            ['label' => 'Explorers', 'url' => ['/explorer']],
-            ((is_null(Yii::$app->user->identity))
-                ? ['label' => 'Login', 'url' => ['/site/login']]
-                : '<li class="nav-item">'
-                    . Html::beginForm(['/site/logout'])
+            ['label' => 'Explorers', 'url' => ['/explorer'], 'active' => in_array(\Yii::$app->controller->id, ['explorer']),],
+    ];
+
+    if ((!is_null(Yii::$app->user->identity)) && (Yii::$app->user->identity->is_admin)) {
+        $admin_navbar = [
+            '&nbsp;&nbsp;&nbsp;&nbsp;',
+            ['label' => 'Dashboard', 'url' => ['/admin/dashboard']],
+            ['label' => 'Wallets', 'url' => ['/admin/coinwallets']],
+            ['label' => 'Coins', 'url' => ['/admin/coinlist']],
+             '<li class="nav-item">'
+                    . Html::beginForm(['/admin/logout'])
                     . Html::submitButton(
                         'Logout (' . Yii::$app->user->identity->username . ')',
                         ['class' => 'nav-link btn btn-link logout']
                     )
                     . Html::endForm()
-                    . '</li>'),
-        ]
+                    . '</li>'
+        ];
+    }
+    else {
+         $admin_navbar = [
+            ['label' => 'Login', 'url' => ['/admin/login'], 'active' => in_array(\Yii::$app->controller->id, ['admin']),]
+         ];
+    }
+
+    $items = array_merge($items_navbar, $admin_navbar);
+    echo Nav::widget([
+        'options' => ['class' => 'navbar-nav'],
+        'items' => $items
     ]);
     echo Html::tag('div', 'Next Payout: '.$nextpayment, 
                     ['class' => 'navbar-text ms-auto' ]);

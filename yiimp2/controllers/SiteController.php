@@ -7,7 +7,6 @@ use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\web\Response;
 use yii\filters\VerbFilter;
-use app\models\LoginForm;
 
 use app\models\Coins;
 
@@ -68,40 +67,6 @@ class SiteController extends Controller
             return $this->render('wallet');
         else
             return $this->render('index');
-    }
-
-    /**
-     * Login action.
-     *
-     * @return Response|string
-     */
-    public function actionLogin()
-    {
-        if (!is_null(Yii::$app->user->identity)) {
-            return $this->goHome();
-        }
-
-        $model = new LoginForm();
-        if ($model->load(Yii::$app->request->post()) && $model->login()) {
-            return $this->goBack();
-        }
-
-        $model->password = '';
-        return $this->render('login', [
-            'model' => $model,
-        ]);
-    }
-
-    /**
-     * Logout action.
-     *
-     * @return Response
-     */
-    public function actionLogout()
-    {
-        Yii::$app->user->logout();
-
-        return $this->goHome();
     }
 
     /**
@@ -188,7 +153,7 @@ class SiteController extends Controller
     // Pool Tab : Top left panel with estimated profit per coin
 	public function actionMining_results()
 	{
-		if (!is_null(Yii::$app->user->identity))
+		if ((!is_null(Yii::$app->user->identity)) && (Yii::$app->user->identity->is_admin))
 			return $this->renderPartial('results/mining_results');
 		else
 			return $this->renderPartialAlgoMemcached('results/mining_results');

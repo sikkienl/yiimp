@@ -7,6 +7,13 @@ use yii\bootstrap5\Html;
 
 class Coins extends ActiveRecord
 {
+	public function rules()
+    {
+        return [
+            [['name', 'symbol'], 'required'],
+        ];
+    }
+
     public function getOfficialSymbol()
 	{
 		if(!empty($this->symbol2))
@@ -34,13 +41,12 @@ class Coins extends ActiveRecord
 			$htmlOpts = array_merge(array('target'=>'_blank', 'class' => 'profile-link'), $htmlOptions);
 			return Html::a($label, $url, $htmlOpts);
 		}
-		else if (YIIMP_PUBLIC_EXPLORER || $force || user()->getState('yaamp_admin')) {
-			$urlParams = array_merge(array('id'=>$this->id), $params);
-/*			Yii::import('application.modules.explorer.ExplorerController');
-			$TmpExplorer = new ExplorerController(1); // php8 workaround
-    		$url = $TmpExplorer->createUrl('/explorer', $urlParams);
-			return CHtml::link($label, trim($url,'?'), $htmlOptions);*/
-			return Html::a($label, ['/explorer', $urlParams], ['class' => 'profile-link']);
+		else if (YIIMP_PUBLIC_EXPLORER || $force || 
+				((!is_null(Yii::$app->user->identity)) && (Yii::$app->user->identity->is_admin))) {
+			
+			$urlParams = array_merge(['/explorer/'.$this->getOfficialSymbol(), 'id'=>$this->id], $params);
+
+			return Html::a($label, $urlParams, ['class' => 'profile-link']);
 		}
 		return $label;
 	}

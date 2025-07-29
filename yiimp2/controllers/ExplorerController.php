@@ -3,6 +3,7 @@
 namespace app\controllers;
 
 use Yii;
+use yii\base\InlineAction;
 use yii\web\Controller;
 use app\components\rpc\WalletRPC;
 
@@ -13,31 +14,36 @@ class ExplorerController extends Controller
 	public $defaultAction='index';
 
 	/////////////////////////////////////////////////
-/*
-	public function run($actionID)
+	// dynamic reroute action on coin symbol
+	public function createAction($id)
 	{
-		// Forward the url /explorer/BTC to the BTC block explorer
-		if (!empty($actionID)) {
-			if (is_numeric($actionID) && isset($_REQUEST['id'])) {
-				$this->forward('id');
+		if ($id === '') {
+			$id = $this->defaultAction;
+		}
+		$actionMap = $this->actions();
+		if (isset($actionMap[$id])) {
+			return Yii::createObject($actionMap[$id], [$id, $this]);
+		}
+
+		if (strlen($id) <= 10) {
+			$coin = Coins::findOne(['symbol' => $id]);
+			
+			if ($coin && ($coin->visible)) {
+				$id = $this->defaultAction;
 			}
-			elseif (strlen($actionID) <= 10 && !isset($_REQUEST['id'])) {
-				$coin = getdbosql('db_coins', "symbol=:symbol", array(
-					':symbol'=>strtoupper($actionID)
-				));
-				if ($coin && ($coin->visible || $this->admin)) {
-					if (!empty($_POST)) {
-						$_GET['SYM'] = $coin->symbol;
-						$this->forward('search');
-					}
-					$_REQUEST['id'] = $coin->id;
-					$this->forward('id');
+		}
+		if (preg_match('/^(?:[a-z0-9_]+-)*[a-z0-9_]+$/', $id)) {
+			$methodName = 'action' . str_replace(' ', '', ucwords(str_replace('-', ' ', $id)));
+			if (method_exists($this, $methodName)) {
+				$method = new \ReflectionMethod($this, $methodName);
+				if ($method->isPublic() && $method->getName() === $methodName) {
+					return new InlineAction($id, $this, $methodName);
 				}
 			}
 		}
-		return parent::run($actionID);
+
+		return null;
 	}
-*/
 	/////////////////////////////////////////////////
 
 	// Hide coin id from explorer links... created by createUrl()
@@ -62,7 +68,7 @@ class ExplorerController extends Controller
 		//if(!LimitRequest('explorer')) return;
 
 		$id = (int) Yii::$app->getRequest()->getQueryParam('id');
-		$coin = Coins::find()->where(['id'=>$id])->one();
+		$coin = Coins::findOne(['id'=>$id]);
 		if($coin && $coin->no_explorer) {
 			$link = $coin->link_explorer;
 			die("Block explorer disabled, please use <a href=\"$link\">$link</a>");
@@ -83,7 +89,7 @@ class ExplorerController extends Controller
 			$block = $remote->getblock($q);
 			if ($block) {
 				$hash = $q;
-				$height = objSafeVal($hash, 'height');
+				$height = Yii::$app->ConversionUtils->objSafeVal($hash, 'height');
 			} else {
 				$txid = $q;
 			}
@@ -95,7 +101,7 @@ class ExplorerController extends Controller
 			$tx = $remote->getrawtransaction($txid, 1);
 			if (!$tx) $tx = $remote->gettransaction($txid);
 
-			$hash = arraySafeVal($tx,'blockhash');
+			$hash = Yii::$app->ConversionUtils->arraySafeVal($tx,'blockhash');
 		}
 
 		if($coin && !empty($hash))
@@ -143,11 +149,11 @@ class ExplorerController extends Controller
 	public function actionGraph()
 	{
 		$id = (int) Yii::$app->getRequest()->getQueryParam('id');
-		$coin = getdbo('db_coins', $id);
+		$coin = Coins::findOne(['id' => $id]);
 		if ($coin)
-			$this->renderPartial('graph', array('coin'=>$coin));
+			return $this->renderPartial('graph', array('coin'=>$coin));
 		else
-			echo "[]";
+			return "[]";
 	}
 
 	/**
@@ -159,6 +165,8 @@ class ExplorerController extends Controller
 		$coin = Coins::find()->where(['id'=>$id])->one();
 		if ($coin)
 			return $this->renderPartial('peers', array('coin'=>$coin));
+		else
+			return $this->goBack();
 	}
 
 }
