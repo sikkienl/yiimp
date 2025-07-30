@@ -148,6 +148,8 @@ class CronjobController extends CommonController
 				doBinanceTrading();
 				doKuCoinTrading();
 				doYobitTrading();
+				doNestexTrading();
+				doNonkycTrading();
 				doTradeogreTrading();
 				break;
 
@@ -225,7 +227,8 @@ class CronjobController extends CommonController
 	{
 	    set_time_limit(0);
 
-	    updateSafetradeMarkets();
+	    $result = nestex_api_user('balances', [], 'POST', 'array');
+		var_dump($result);
 	}
 
 }

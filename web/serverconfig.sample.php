@@ -148,6 +148,9 @@ define('EXCH_YOBIT_SECRET', '');
 define('EXCH_NONKYC_KEY', '');
 define('EXCH_NONKYC_SECRET', '');
 
+define('EXCH_NESTEX_KEY', '');
+define('EXCH_NESTEX_SECRET', '');
+
 // Automatic withdraw to Yaamp btc wallet if btc balance > 0.3
 define('EXCH_AUTO_WITHDRAW', 0.3);
 

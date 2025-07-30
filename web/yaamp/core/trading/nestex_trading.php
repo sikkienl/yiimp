@@ -18,29 +18,32 @@ function doNestexTrading($quick = false) {
 	$updatebalances = true;
 	if (exchange_get($exchange, 'disabled')) return;
 
-	$balances = nestex_api_user('wallets/balances', [], 'GET', 'array');
-	if (!is_array($balances)) return;
+	$balances = nestex_api_user('balances', [], 'POST', 'array');
+	if ((!is_array($balances)) || (!isset($balances['balances']))) return;
 
 	$savebalance = getdbosql('db_balances', "name='$exchange'");
-	foreach ($balances as $balance) {
-		if (strtoupper($balance['currency']) == 'USDT') {
+	foreach ($balances['balances'] as $currency => $balance) {
+
+		/* balances stored as btc, altcoins need to convert first to get real value */
+		if (strtoupper($currency) == 'BTC') {
 			if (is_object($savebalance)) {
-				$savebalance->balance = $balance['available'];
-				$savebalance->onsell = $balance['locked'];
+				$savebalance->balance = $balance;
+				// $savebalance->onsell = 0;
 				$savebalance->save();
 			}
 			continue;
 		}
+
 		if ($updatebalances) {
 			$coins = getdbolist('db_coins', "symbol=:symbol OR symbol2=:symbol",
-				array(':symbol' => strtoupper($balance['currency']))
+				array(':symbol' => strtoupper($currency))
 			);
 			if (empty($coins)) continue;
 			foreach ($coins as $coin) {
-				$market = getdbosql('db_markets', "coinid=:coinid AND name='$exchange'", array(':coinid' => $coin->id));
+				$market = getdbosql('db_markets', "coinid=:coinid AND name LIKE '$exchange%'", array(':coinid' => $coin->id));
 				if (!$market) continue;
-				$market->balance = $balance['available'];
-				$market->ontrade = $balance['locked'];
+				$market->balance = $balance;
+				// $market->ontrade = 0;
 				$market->balancetime = time();
 				$market->save();
 			}
@@ -48,6 +51,8 @@ function doNestexTrading($quick = false) {
 	}
 	if (!YAAMP_ALLOW_EXCHANGE) return;
 
+	// api endpoints to create order currently not available
+	return;
 	$flushall = rand(0, 8) == 0;
 	if ($quick) $flushall = false;
 
