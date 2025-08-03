@@ -21,17 +21,33 @@ function doNestexTrading($quick = false) {
 	$balances = nestex_api_user('balances', [], 'POST', 'array');
 	if ((!is_array($balances)) || (!isset($balances['balances']))) return;
 
-	$savebalance = getdbosql('db_balances', "name='$exchange'");
+	$marketprices = nestex_api_query('cg/tickers','','array');
+	if (!is_array($marketprices)) return;
+
+	$marketsummary = []; $usdt_price = 0;
+	foreach($marketprices as $singlemarket) {
+		if (isset($singlemarket['target_currency']) && isset($singlemarket['base_currency']) &&
+			($singlemarket['target_currency'] == 'USDT'))	{
+			$marketsummary[$singlemarket['base_currency']] = $singlemarket;
+			if ($singlemarket['base_currency']== 'BTC') {
+				$usdt_price = $singlemarket['last_price'];
+			}
+		}
+	}
+
+	$btc_balance = 0; $btc_locked_balance = 0;
 	foreach ($balances['balances'] as $currency => $balance) {
 		$locked_balance = isset($balances['locked'][$currency])? $balances['locked'][$currency] : 0 ;
-		/* balances stored as btc, altcoins need to convert first to get real value */
+		/* balances stored as btc */
 		if (strtoupper($currency) == 'BTC') {
-			if (is_object($savebalance)) {
-				$savebalance->balance = $balance - $locked_balance;
-				$savebalance->onsell = $locked_balance;
-				$savebalance->save();
-			}
+			$btc_balance += ($balance - $locked_balance);
+			$btc_locked_balance += $locked_balance;
 			continue;
+		}
+		/* as there are only usdt markets on nestex treaded usdt like btc */
+		if (strtoupper($currency) == 'USDT') {
+			$btc_balance += ($balance - $locked_balance) / $usdt_price;
+			$btc_locked_balance += $locked_balance / $usdt_price;
 		}
 
 		if ($updatebalances) {
@@ -49,18 +65,15 @@ function doNestexTrading($quick = false) {
 			}
 		}
 	}
-	if (!YAAMP_ALLOW_EXCHANGE) return;
 
-	$marketprices = nestex_api_query('cg/tickers','','array');
-	if (!is_array($marketprices)) return;
-
-	$marketsummary = [];
-	foreach($marketprices as $singlemarket) {
-		if (isset($singlemarket['target_currency']) && isset($singlemarket['base_currency']) &&
-			($singlemarket['target_currency'] == 'USDT'))	{
-			$marketsummary[$singlemarket['base_currency']] = $singlemarket;
-		}
+	$savebalance = getdbosql('db_balances', "name='$exchange'");
+	if (is_object($savebalance)) {
+		$savebalance->balance = $btc_balance;
+		$savebalance->onsell = $btc_locked_balance;
+		$savebalance->save();
 	}
+
+	if (!YAAMP_ALLOW_EXCHANGE) return;
 
 	$ordersbook = nestex_api_user('orders', [], 'POST', 'array' );
 	$flushall = rand(0, 8) == 0;
