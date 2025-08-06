@@ -25,7 +25,6 @@ require_once("shapeshift.php");
 require_once("binance.php");
 require_once("hitbtc.php");
 require_once("kucoin.php");
-require_once("xeggex.php");
 require_once("nonkyc.php");
 require_once("tradeogre.php");
 require_once("safetrade.php");
@@ -73,8 +72,6 @@ function getMarketUrl($coin, $marketName)
 		$url = "https://hitbtc.com/exchange/{$symbol}-to-{$base}";
 	else if($market == 'kucoin')
 		$url = "https://www.kucoin.com/#/trade.pro/{$symbol}-{$base}";
-	else if ($market == 'xeggex')
-		$url = "https://xeggex.com/market/{$symbol}_{$base}";
 	else if ($market == 'nonkyc')
 		$url = "https://nonkyc.io/market/{$symbol}_{$base}";
 	else if($market == 'tradeogre')

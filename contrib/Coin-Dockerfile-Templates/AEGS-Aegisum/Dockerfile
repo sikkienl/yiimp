@@ -17,7 +17,7 @@ FROM baseimage2204 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=f043a872e56d5a7fa01e9713782e1dcc8215c9a7
+ARG CURRENT_GITHUB_COMMIT=20b9864330f3d38737b88f8c81952e5a709de4e5
 
 RUN git clone https://github.com/Aegisum/aegisum-core
 WORKDIR /aegisum-core

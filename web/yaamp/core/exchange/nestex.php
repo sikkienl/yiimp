@@ -27,26 +27,28 @@ function nestex_api_query($method = 'cg/tickers', $params = '', $returnType = 'a
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // for private api once available 
 
-/* 
 function nestex_api_user($method, $url_params = [], $request_method = 'GET', $returnType = 'array') {
 
 	if (empty(EXCH_NESTEX_SECRET)) return false;
+	if (!is_array($url_params)) return false;
 
 	$base = 'https://trade.nestex.one'; 
-	$path = '/api/' . $method;
+	$path = '/api/v2/' . $method;
 
 	$request = '';
 
-	if (is_array($url_params)) {
-		ksort($url_params);
-		$request = http_build_query($url_params, '', '&');
-	} elseif (is_string($url_params)) {
-		$request = $url_params;
-	}
+	$auth_info = [
+		"apikey" =>  EXCH_NESTEX_KEY,
+		"apisecret" => EXCH_NESTEX_SECRET
+	];
+
+	$request_params = array_merge($auth_info, $url_params);
+	ksort($request_params);
+	$request = http_build_query($request_params, '', '&');
 
 	if ($request_method == 'POST') {
 		$uri = $base . $path;
-		$payload = json_encode($url_params);
+		$payload = json_encode($request_params);
 	} else {
 		$uri = $base . $path . (!empty($request) ? '?' . $request : '');
 		$payload = '';
@@ -54,7 +56,6 @@ function nestex_api_user($method, $url_params = [], $request_method = 'GET', $re
 
 	$http_headers = [
 		'Content-Type: application/json',
-		'Authorization: Bearer ' . EXCH_NESTEX_SECRET
 	];
 
 	$http_request = new cHTTP();
@@ -88,4 +89,4 @@ function nestex_api_user($method, $url_params = [], $request_method = 'GET', $re
 		return json_decode($data, true);
 	}
 }
-*/
+

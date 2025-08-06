@@ -1,7 +1,7 @@
 # change image name
 image_name=bit
 # version tag
-version=Bit.v.2.1.0.0
+version=Bit.v3
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 

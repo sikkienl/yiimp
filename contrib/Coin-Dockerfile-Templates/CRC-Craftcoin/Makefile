@@ -1,7 +1,7 @@
 # change image name
 image_name=craftcoin
 # version tag
-version=Craftcoin
+version=v3.0.3
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 
@@ -21,7 +21,7 @@ registry_username=xxx
 registry_password=xxx
 
 gitclone:
-	git clone https://github.com/craftcoin2013/craftcoin
+	git clone https://github.com/craftcoin2013/craftcoinV3/
 
 build:
 	podman build --tag ${image_name} --build-arg STRATUM_UPDATEPASS=${STRATUM_UPDATEPASS} --build-arg walletuserid=${walletuserid} --build-arg walletgroupid=${walletgroupid} -f Dockerfile

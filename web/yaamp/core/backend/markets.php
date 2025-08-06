@@ -108,9 +108,6 @@ function BackendPricesUpdateExchange($exchangename)
 		case 'shapeshift':
 			updateShapeShiftMarkets();
 		break;
-		case 'xeggex':
-			updateXeggexMarkets();
-		break;
 		case 'nonkyc':
 			updateNonKYCMarkets();
 		break;
@@ -556,75 +553,6 @@ function updateBTCAlphaMarkets($force = false)
 	}
 }
 */
-function updateXeggexMarkets()
-{
-	debuglog(__FUNCTION__);
-    $exchange = 'xeggex';
-
-    if (exchange_get($exchange, 'disabled')) { return; }
-
-    $list = getdbolist('db_markets', "name LIKE '$exchange%'");
-    if (empty($list)) { return; }
-
-    $data = xeggex_api_query('tickers','','array');
-    if(!is_array($data)) { return; }
-
-    foreach($list as $market) {
-	$coin = getdbo('db_coins', $market->coinid);
-	if(!$coin) { continue; }
-	$symbol = $coin->getOfficialSymbol();
-	$pair = strtolower($symbol).'_btc';
-	$pair_reverse = 'btc_'.strtolower($symbol);
-
-	if (!empty($market->base_coin))
-	{
-		$pair = strtolower($symbol.'_'.$market->base_coin);
-	}
-	if (market_get($exchange, $symbol, "disabled"))
-	{
-		$market->disabled = 1;
-		$market->message = 'disabled from settings';
-		$market->save();
-		continue;
-	}
-	foreach ($data as $ticker) {
-		if ($ticker['type'] != 'market') { continue; }
-		$ticker_id = strtolower($ticker['ticker_id']);
-		if ($ticker_id === $pair) {
-			$price2 = ($ticker['bid']+$ticker['ask'])/2;
-			$market->price2 = AverageIncrement($market->price2, $price2);
-			$market->price = AverageIncrement($market->price, $ticker['bid']);
-			$market->pricetime = time(); // $ticker->timestamp "2018-08-31T12:48:56Z"
-			$market->save();
-			if (empty($coin->price) && $ticker['ask']) {
-				$coin->price = $market->price;
-				$coin->price2 = $price2;
-				$coin->save();
-			}
-			// debuglog("$exchange: $pair price updated to {$market->price}");
-			break;
-		}
-		else if ($ticker_id === $pair_reverse) {
-			$tmpbid = ($ticker['ask'] == 0)?0 : (1 / $ticker['ask']);
-			$tmpask = ($ticker['bid'] == 0)?0 : (1 / $ticker['bid']);
-
-			$price2 = ($tmpbid+$tmpask)/2;
-			$market->price2 = AverageIncrement($market->price2, $price2);
-			$market->price = AverageIncrement($market->price, $tmpbid);
-			$market->pricetime = time(); // $ticker->timestamp "2018-08-31T12:48:56Z"
-			$market->save();
-			if (empty($coin->price) && $tmpask) {
-				$coin->price = $market->price;
-				$coin->price2 = $price2;
-				$coin->save();
-			}
-			// debuglog("$exchange: $pair_reverse price updated to {$market->price}");
-			break;
-		}
-
-	}
-    }
-}
 
 function updateNonKYCMarkets()
 {

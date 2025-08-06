@@ -22,7 +22,7 @@ FROM baseimage1804 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=2e2a4fe32939b68dd93f60b4b4ee57e6032d4e1a
+ARG CURRENT_GITHUB_COMMIT=3d9ba28ba19f7a0a0ad3c6e00bb5728829e4a57a
 
 RUN git clone https://github.com/infinitecoin-project/infinitecoin
 WORKDIR /infinitecoin

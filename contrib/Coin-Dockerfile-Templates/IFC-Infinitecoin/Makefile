@@ -1,7 +1,7 @@
 # change image name
 image_name=infinitecoin
 # version tag
-version=v0.14.7.3
+version=v0.14.8.0
 # local storage for container dumps
 container_savepath=${CONTAINER_SAVEPATH}
 

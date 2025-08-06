@@ -119,6 +119,7 @@ class ExplorerController extends CommonController
 		$txid = gethexparam('txid');
 		$hash = gethexparam('hash');
 		$q = gethexparam('q');
+		$url = '/'; // defaults to home on invalid search
 		if (isset($_GET['SYM'])) {
 			// only for visible coins
 			$url = "/explorer/".$_GET['SYM']."?";

@@ -22,7 +22,7 @@ FROM baseimage1804 as coinwallet
 
 # Clone the source code.
 ARG STRATUM_UPDATEPASS
-ARG CURRENT_GITHUB_COMMIT=b2acd836fed3056baa5ff41e3f63c0f9e6cde1a0
+ARG CURRENT_GITHUB_COMMIT=12d9f845c166e894aaa01ed82dd2720d522c2d14
 
 RUN git clone https://github.com/AIPowerGrid/AI-Power-Grid-Core
 WORKDIR /AI-Power-Grid-Core
