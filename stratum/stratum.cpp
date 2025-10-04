@@ -171,6 +171,7 @@ YAAMP_ALGO g_algos[] =
 	{"hmq1725", hmq17_hash, 0x10000, 0, 0},
 	{"honeycomb", beenode_hash, 0x10000, 0, 0},
 	{"hsr", hsr_hash, 1, 0, 0},
+	{"interchained", interchained_hash, 0x10000, 0, 0 },
 	{"jeonghash", jeonghash_hash, 0x100, 0, 0},
 	{"jha", jha_hash, 0x10000, 0},
 	{"kawpow", sha256_double_hash, 1, 0, 0},
