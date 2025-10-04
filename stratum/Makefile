@@ -1,5 +1,5 @@
 
-CC= gcc -no-pie
+CC= gcc -no-pie -std=c++14
 
 CFLAGS= -g -march=native -I./
 SQLFLAGS= `mysql_config --cflags --libs`
