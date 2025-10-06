@@ -217,6 +217,7 @@ class ApiController extends CommonController
 					'blocktime' => $coin->block_time,
 					'height' => (int) $coin->block_height,
 					'difficulty' => $coin->difficulty,
+					'autotrade' => $coin->auto_exchange,
 					'minimumPayment' => $min_payout,
 					'fees' => (double) $fees,
 					'fees_solo' => (double) $fees_solo,
