@@ -392,7 +392,7 @@ void coinbase_create(YAAMP_COIND *coind, YAAMP_JOB_TEMPLATE *templ, json_value *
 		return;
 	}
 
-	else if(!strcmp(coind->symbol, "XZC")) //hardcoded everything
+	else if(!strcmp(coind->symbol, "FIRO")) //hardcoded everything
 	{
         char script_payee[1024];
         bool znode_masternode_enabled = json_get_bool(json_result, "znode_payments_started");
@@ -402,25 +402,19 @@ void coinbase_create(YAAMP_COIND *coind, YAAMP_JOB_TEMPLATE *templ, json_value *
             json_int_t amount = json_get_int(znode_masternode, "amount");
             if (payee && amount) {
                 //debuglog("znode payee: %s\n", payee);
-                strcat(templ->coinb2, "06");
+                strcat(templ->coinb2, "04");
                 job_pack_tx(coind, templ->coinb2, available, NULL);
                 base58_decode(payee, script_payee);
                 job_pack_tx(coind, templ->coinb2, amount, script_payee);
             }
         } else {
-            strcat(templ->coinb2, "06");
+            strcat(templ->coinb2, "03");
             job_pack_tx(coind, templ->coinb2, available, NULL);
         }
-        base58_decode("aCAgTPgtYcA4EysU4UKC86EQd5cTtHtCcr", script_payee);
-        job_pack_tx(coind, templ->coinb2, 1 * 100000000, script_payee);
-        base58_decode("aHu897ivzmeFuLNB6956X6gyGeVNHUBRgD", script_payee);
-        job_pack_tx(coind, templ->coinb2, 1 * 100000000, script_payee);
-        base58_decode("aQ18FBVFtnueucZKeVg4srhmzbpAeb1KoN", script_payee);
-        job_pack_tx(coind, templ->coinb2, 1 * 100000000, script_payee);
-        base58_decode("a1HwTdCmQV3NspP2QqCGpehoFpi8NY4Zg3", script_payee);
-        job_pack_tx(coind, templ->coinb2, 3 * 100000000, script_payee);
-        base58_decode("a1kCCGddf5pMXSipLVD9hBG2MGGVNaJ15U", script_payee);
-        job_pack_tx(coind, templ->coinb2, 1 * 100000000, script_payee);
+        base58_decode("aLgRaYSFk6iVw2FqY1oei8Tdn2aTsGPVmP", script_payee);
+        job_pack_tx(coind, templ->coinb2, 0.9375 * 100000000, script_payee);
+        base58_decode("aFA2TbqG9cnhhzX5Yny2pBJRK5EaEqLCH7", script_payee);
+        job_pack_tx(coind, templ->coinb2, 0.625 * 100000000, script_payee);
         strcat(templ->coinb2, "00000000"); // locktime
         coind->reward = (double)available/100000000*coind->reward_mul;
         return;
