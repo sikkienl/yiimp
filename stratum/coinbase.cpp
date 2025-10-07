@@ -419,7 +419,7 @@ void coinbase_create(YAAMP_COIND *coind, YAAMP_JOB_TEMPLATE *templ, json_value *
         coind->reward = (double)available/100000000*coind->reward_mul;
         return;
     }
-	
+
 	else if(!strcmp(coind->symbol, "HXX")) //hardcoded everything
 	{
         char script_payee[1024];
