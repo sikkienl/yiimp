@@ -1,7 +1,7 @@
 <?php
 function exbitron_api_query($method, $params='', $returnType='object')
 {
-	$uri = "https://api.exbitron.digital/api/v1/{$method}";
+	$uri = "https://api.exbitron.com/api/v1/{$method}";
 
     if (!empty($params)) $uri .= "?{$params}";
 	$ch = curl_init($uri);
@@ -22,7 +22,7 @@ function exbitron_api_user($method, $url_params = [], $request_method='GET', $re
 	
 	if (empty(EXCH_EXBITRON_SECRET)) return false;
 
-	$base = 'https://api.exbitron.digital'; $path = '/api/v1/'.$method;
+	$base = 'https://api.exbitron.com'; $path = '/api/v1/'.$method;
 
 	$request = '';
 
