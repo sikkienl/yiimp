@@ -624,6 +624,43 @@ void coinbase_create(YAAMP_COIND *coind, YAAMP_JOB_TEMPLATE *templ, json_value *
 			return;
     }
 
+	else if (!strcmp(coind->symbol, "ADVC"))
+	{
+		char payees[4];
+		int npayees = 2;
+		char script_dests[4096] = { 0 };
+
+		json_int_t coinbase_value = json_get_int(json_result, "coinbasevalue");
+		json_value *developer = json_get_object(json_result, "developer");
+
+		const char *developer_payee = json_get_string(developer, "payee");
+		json_int_t developer_amount = json_get_int(developer, "amount");
+		json_int_t miner_amount = coinbase_value;
+
+
+		char developer_script_payee[128] = { 0 };
+		base58_decode(developer_payee, developer_script_payee);
+
+		job_pack_tx(coind, script_dests, miner_amount, NULL);
+		job_pack_tx(coind, script_dests, developer_amount, developer_script_payee);
+
+		sprintf(payees, "%02x", npayees);
+		strcat(templ->coinb2, payees);
+		strcat(templ->coinb2, script_dests);
+		strcat(templ->coinb2, "00000000");
+
+		if (coinbase_payload && strlen(coinbase_payload) > 0)
+		{
+   			char coinbase_payload_size[18];
+	        ser_compactsize((unsigned int)(strlen(coinbase_payload) >> 1), coinbase_payload_size);
+	        strcat(templ->coinb2, coinbase_payload_size);
+	        strcat(templ->coinb2, coinbase_payload);
+		}
+
+		coind->reward = ((double)(miner_amount + developer_amount)) / 100000000 * coind->reward_mul;
+		return;
+	}
+
 	//=================================================================================================================
 	//If allowed, start 'full auto' processing. Covers old and new masternodes, founder/charity and superblocks. Manual charity % from SQL is enabled.
 	//Successfully tested with: ROGU (smartnode+founder), VIVO (new MN), GBX (new MN), FTC (none), PXC (none)
