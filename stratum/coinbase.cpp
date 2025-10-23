@@ -661,6 +661,32 @@ void coinbase_create(YAAMP_COIND *coind, YAAMP_JOB_TEMPLATE *templ, json_value *
 		return;
 	}
 
+    else if(!strcmp(coind->symbol, "KCN"))
+	{
+		char outputs_count[4] = { 0 };
+        char devscript2[256] = { 0 };
+        char devscript_len[3] = { 0 };
+        unsigned int outputs = 2;
+        char dev_amount[32];
+        json_value *devreward = json_get_object(json_result, "coinbasedevreward");
+        json_int_t devvalue = json_get_int(devreward, "value");
+        const char *devscript = json_get_string(devreward, "scriptpubkey");
+        encode_tx_value(dev_amount, devvalue);
+        snprintf(devscript2, 255, "%s", devscript);
+        sprintf(devscript_len, "%02x", strlen(devscript2) >> 1);
+        if (templ->has_segwit_txs) outputs++;
+        sprintf(outputs_count, "%02x", outputs);
+        strcat(templ->coinb2, outputs_count);
+        job_pack_tx(coind, templ->coinb2, available, NULL);
+        coind->reward = (double)available/100000000*coind->reward_mul;
+        strcat(templ->coinb2, dev_amount);
+        strcat(templ->coinb2, devscript_len);
+        strcat(templ->coinb2, devscript2);
+        if (templ->has_segwit_txs) strcat(templ->coinb2, commitment);
+        strcat(templ->coinb2, "00000000");
+        return;
+    }
+
 	//=================================================================================================================
 	//If allowed, start 'full auto' processing. Covers old and new masternodes, founder/charity and superblocks. Manual charity % from SQL is enabled.
 	//Successfully tested with: ROGU (smartnode+founder), VIVO (new MN), GBX (new MN), FTC (none), PXC (none)
