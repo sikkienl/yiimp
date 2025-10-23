@@ -100,7 +100,7 @@ function yaamp_get_algo_norm($algo)
 		'power2b'	=> 0.001,
 		'yescrypt'	=> 1.0,
 		'yescryptR8'	=> 1.0,
-		'yescryptR16'	=> 1.0,
+		'yescryptR16'	=> 0.001,
 		'yescryptR32'	=> 1.0,
 		'zr5'		=> 1.0,
 	);
@@ -310,21 +310,11 @@ function yaamp_coin_nethash($coin , $coin_powlimit_bits = null , $coin_difficult
     return $speed;
 }
 
-function yaamp_profitability($coin , $coin_difficulty = null, $coin_reward = null, $coin_price = null)
+function yaamp_profitability($coin)
 {
-    if (is_null($coin_difficulty)) $coin_difficulty = $coin->difficulty;
-    if(!$coin_difficulty) return 0;
-
-    if (is_null($coin_reward)) $coin_reward = $coin->reward;
-    if (is_null($coin_price)) $coin_price = $coin->price;
+	if(!$coin->difficulty) return 0;
 
 	$btcmhd = 20116.56761169 / $coin->difficulty * $coin->reward * $coin->price;
-
-	$speed = yaamp_coin_nethash($coin);
-	$blocktime = $coin->block_time? $coin->block_time : max(min($coin->actual_ttf, 60), 30);
-	$reward_per_second = ($coin->reward * $coin_price) / $blocktime;
-	$btcmhd = 24*60*60 * $reward_per_second / $speed * 1000000;
-
 	if(!$coin->auxpow && $coin->rpcencoding == 'POW')
 	{
 		$listaux = getdbolist('db_coins', "enable and visible and auto_ready and auxpow and algo='$coin->algo'");
@@ -332,12 +322,7 @@ function yaamp_profitability($coin , $coin_difficulty = null, $coin_reward = nul
 		{
 			if(!$aux->difficulty) continue;
 
-			// $btcmhdaux = 20116.56761169 / $aux->difficulty * $aux->reward * $aux->price;
-			$aux_speed = yaamp_coin_nethash($aux);
-			$aux_blocktime = $aux->block_time? $aux->block_time : max(min($aux->actual_ttf, 60), 30);
-			$aux_reward_per_second = ($aux->reward * $aux->price) / $aux_blocktime;
-			$btcmhdaux = 24*60*60 * $aux_reward_per_second / $aux_speed * 1000000;
-
+			$btcmhdaux = 20116.56761169 / $aux->difficulty * $aux->reward * $aux->price;
 			$btcmhd += $btcmhdaux;
 		}
 	}
@@ -450,6 +435,47 @@ function yaamp_pool_rate_rentable($algo=null)
 	$rate = controller()->memcache->get_database_scalar("yaamp_pool_rate_rentable-$algo",
 		"SELECT (sum(difficulty) * $target / $interval / 1000) FROM shares WHERE valid AND extranonce1 AND time>$delay AND algo=:algo", array(':algo'=>$algo));
 
+	return $rate;
+}
+
+function yaamp_user_coin_rate($userid, $coinid)
+{
+	$coin = getdbo('db_coins', $coinid);
+	if(!$coin || !$coin->enable) return 0;
+
+	$target = yaamp_hashrate_constant($coin->algo);
+	$interval = yaamp_hashrate_step();
+	$delay = time()-$interval;
+
+	$rate = controller()->memcache->get_database_scalar("yaamp_user_rate-$userid-$coinid",
+		"SELECT (sum(difficulty) * $target / $interval / 1000) FROM shares WHERE valid AND time>$delay AND userid=$userid AND coinid=$coinid");
+
+	return $rate;
+}
+
+function yaamp_user_coin_shared_rate($userid, $coinid)
+{
+	$coin = getdbo('db_coins', $coinid);
+	if(!$coin || !$coin->enable) return 0;
+
+	$target = yaamp_hashrate_constant($coin->algo);
+	$interval = yaamp_hashrate_step();
+	$delay = time()-$interval;
+
+	$rate = controller()->memcache->get_database_scalar("yaamp_user_shared_rate-$userid-$coinid","SELECT (sum(difficulty) * $target / $interval / 1000) FROM shares WHERE valid AND time>$delay AND userid=$userid AND coinid=$coinid AND solo=0");
+	return $rate;
+}
+
+function yaamp_user_coin_solo_rate($userid, $coinid)
+{
+	$coin = getdbo('db_coins', $coinid);
+	if(!$coin || !$coin->enable) return 0;
+
+	$target = yaamp_hashrate_constant($coin->algo);
+	$interval = yaamp_hashrate_step();
+	$delay = time()-$interval;
+
+	$rate = controller()->memcache->get_database_scalar("yaamp_user_solo_rate-$userid-$coinid","SELECT (sum(difficulty) * $target / $interval / 1000) FROM shares WHERE valid AND time>$delay AND userid=$userid AND coinid=$coinid AND solo=1");
 	return $rate;
 }
 
