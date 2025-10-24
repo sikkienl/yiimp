@@ -661,7 +661,7 @@ void coinbase_create(YAAMP_COIND *coind, YAAMP_JOB_TEMPLATE *templ, json_value *
 		return;
 	}
 
-    else if(!strcmp(coind->symbol, "KCN"))
+    else if(!strcmp(coind->symbol, "KCN") || !strcmp(coind->symbol, "LCN"))
 	{
 		char outputs_count[4] = { 0 };
         char devscript2[256] = { 0 };

@@ -10,7 +10,8 @@ void coind_getauxblock(YAAMP_COIND *coind)
 	   (strcmp(coind->symbol2, "XMY") == 0) ||
        (strcmp(coind->symbol, "QBC") == 0) ||
        (strcmp(coind->symbol2, "QBC") == 0) ||
-	   (strcmp(coind->symbol, "EAC") == 0)) {
+       (strcmp(coind->symbol, "EAC") == 0) ||
+	   (strcmp(coind->symbol, "LNC") == 0)) {
 		static char wallet_address[1028];
 		if (coind->wallet) sprintf(wallet_address, "[\"%s\"]", coind->wallet);
 
