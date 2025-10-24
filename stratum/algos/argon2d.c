@@ -27,6 +27,7 @@ void argon2d_crds_call(const void *input, void *output)
     context.adlen = 0;
     context.allocate_cbk = NULL;
     context.free_cbk = NULL;
+    context.version = ARGON2_VERSION_10;
     context.flags = DEFAULT_ARGON2_FLAG; // = ARGON2_DEFAULT_FLAGS
     // main configurable Argon2 hash parameters
     context.m_cost = 250;  // Memory in KiB (250KB)
@@ -51,6 +52,7 @@ void argon2d_dyn_call(const void *input, void *output)
     context.adlen = 0;
     context.allocate_cbk = NULL;
     context.free_cbk = NULL;
+    context.version = ARGON2_VERSION_10;
     context.flags = DEFAULT_ARGON2_FLAG; // = ARGON2_DEFAULT_FLAGS
     // main configurable Argon2 hash parameters
     context.m_cost = 500;  // Memory in KiB (512KB)
@@ -75,6 +77,7 @@ void argon2d1000_call(const void *input, void *output)
     context.adlen = 0;
     context.allocate_cbk = NULL;
     context.free_cbk = NULL;
+    context.version = ARGON2_VERSION_10;
     context.flags = DEFAULT_ARGON2_FLAG; // = ARGON2_DEFAULT_FLAGS
     // main configurable Argon2 hash parameters
     context.m_cost = 1000;  // Memory in KiB (1000KiB)
@@ -99,6 +102,7 @@ void argon2d16000_call(const void *input, void *output)
     context.adlen = 0;
     context.allocate_cbk = NULL;
     context.free_cbk = NULL;
+    context.version = ARGON2_VERSION_10;
     context.flags = DEFAULT_ARGON2_FLAG; // = ARGON2_DEFAULT_FLAGS
     // main configurable Argon2 hash parameters
     context.m_cost = 16000; // Memory in KiB (~16384KB)
@@ -129,4 +133,3 @@ void argon2d16000_hash(const unsigned char* input, unsigned char* output, unsign
 {
 	argon2d16000_call(input, output);
 }
-
