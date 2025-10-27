@@ -281,5 +281,6 @@ void sha3d_hash_hex(const char *input, char *output, unsigned int len);
 #include "algos/skydoge.h"
 #include "algos/equihash.h"
 #include "algos/flex.h"
+#include "algos/rinhash.h"
 
 bool validate_hashfunctions();

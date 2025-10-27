@@ -209,6 +209,7 @@ YAAMP_ALGO g_algos[] =
 	{"qubit", qubit_hash, 1, 0, 0},
 	{"rainforest", rainforest_hash, 0x100, 0, 0},
 	{"renesis", renesis_hash, 1, 0, 0},
+	{"rinhash", rinhash_hash, 1, 0, 0},
 	{"scrypt", scrypt_hash, 0x10000, 0, 0},
 	{"scryptn", scryptn_hash, 0x10000, 0, 0},
 	{"sha256", sha256_double_hash, 1, 0, 0},

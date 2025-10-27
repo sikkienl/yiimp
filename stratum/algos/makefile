@@ -4,7 +4,7 @@ CC=gcc -g -ggdb
 #CFLAGS=-c -g -I /usr/include/mysql
 #LDFLAGS=-g
 
-CXXFLAGS = -O2 -I.. -march=native -DNO_AES_NI
+CXXFLAGS = -O2 -I.. -march=native -DNO_AES_NI -DBLAKE3_NO_SSE2 -DBLAKE3_NO_SSE41 -DXKCP_has_KeccakP1600
 CFLAGS= $(CXXFLAGS) -std=gnu99
 LDFLAGS=-O2 -lgmp
 
@@ -30,7 +30,8 @@ SOURCES=lyra2re.c lyra2v2.c Lyra2.c lyra2z.c lyra2z330.c Lyra2-z.c Sponge.c alli
 	cryptonote/cryptonight_turtle_lite.c anime.c aurum.c \
 	equihash.cpp \
 	heavyhash/heavyhash.c heavyhash/keccak_tiny.c cosa.c 0x10.c mike.c sha512_256.c sha3d.c sha256dt.c skydoge.c flex.c \
-	xelisv2.c xelisv2-pepew/blake3.c xelisv2-pepew/blake3_dispatch.c xelisv2-pepew/blake3_portable.c xelisv2-pepew/chacha20.c xelisv2-pepew/chacha20_dispatch.c
+	xelisv2.c blake3/blake3.c blake3/blake3_dispatch.c blake3/blake3_portable.c xelisv2-pepew/chacha20.c xelisv2-pepew/chacha20_dispatch.c \
+	rinhash.c sha3/KeccakP-1600-reference.c sha3/KeccakSponge.c sha3/SimpleFIPS202.c
 	
 OBJECTS=$(SOURCES:%.c=%.o) $(SOURCES:%.cpp=%.o) $(SOURCES:%.cc=%.o)
 OUTPUT=libalgos.a
@@ -54,7 +55,8 @@ clean:
 	rm -f ar2/*.o
 	rm -f blake2/*.o	
 	rm -f blake2-ref/*.o	
-	rm -f cryptonote/*.o	
+	rm -f blake3/*.o
+	rm -f cryptonote/*.o
 	rm -f heavyhash/*.o	
 	rm -f honeycomb/*.o	
 	rm -f SWIFFTX/*.o	
