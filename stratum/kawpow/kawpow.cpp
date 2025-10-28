@@ -8,6 +8,8 @@
 
 #include <firopow/hash.h>
 
+#include <phihash/hash.h>
+
 #include <kawpow/hash.h>
 #include <kawpow/helpers.hpp>
 #include <kawpow/include/ethash/progpow.hpp>
@@ -309,6 +311,8 @@ bool kawpow_submit(YAAMP_CLIENT* client, json_value* json_params)
         hash = kawpow_hash(header_str, nonce_str, mixhash_calc, coinid);
     else if (is_firopow)
         hash = firopow_hash(header_str, nonce_str, mixhash_str, coinid);
+    else if (is_phihash)
+        hash = phihash_hash(header_str, nonce_str, mixhash_str, coinid);
 
     uint256 target = client->share_target;
     uint64_t hash_int = get_hash_difficulty((uint8_t*)&hash);
@@ -328,7 +332,7 @@ bool kawpow_submit(YAAMP_CLIENT* client, json_value* json_params)
     decode_nbits(coin_target, nbits);
 
     if (hash < coin_target) {
-        if (is_kawpow) {
+        if (is_kawpow || is_phihash) {
             kawpow_block(client, job, templ, nonce, mixhash, hash);
         }
         if (is_firopow) {

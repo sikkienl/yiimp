@@ -87,6 +87,7 @@ void *monitor_thread(void *p);
 
 bool is_kawpow = false;
 bool is_firopow = false;
+bool is_phihash = false;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -202,6 +203,7 @@ YAAMP_ALGO g_algos[] =
 	{"phi", phi_hash, 1, 0, 0},
 	{"phi2", phi2_hash, 0x100, 0, 0},
 	{"phi5", phi5_hash, 1, 0, 0},
+	{"phihash", sha256_double_hash, 1, 0, 0},
 	{"pipe", pipe_hash, 1,0,0},
 	{"polytimos", polytimos_hash, 1, 0, 0},
 	{"power2b", power2b_hash, 0x10000, 0, 0 },
@@ -377,10 +379,17 @@ int main(int argc, char **argv)
 	if(!g_current_algo) yaamp_error("invalid algo");
 	if(!g_current_algo->hash_function) yaamp_error("no hash function");
 
-	if (!strcmp(g_current_algo->name,"kawpow")) {
+	if (!strcmp(g_current_algo->name,"kawpow"))
+	{
 		is_kawpow = true;
-	} else if (!strcmp(g_current_algo->name,"firopow")) {
+	}
+	else if(!strcmp(g_current_algo->name,"firopow"))
+	{
 		is_firopow = true;
+	}
+	else if(!strcmp(g_current_algo->name,"phihash"))
+	{
+		is_phihash = true;
 	}
 
 //	struct rlimit rlim_files = {0x10000, 0x10000};

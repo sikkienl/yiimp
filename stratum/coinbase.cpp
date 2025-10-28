@@ -187,7 +187,8 @@ void coinbase_create(YAAMP_COIND *coind, YAAMP_JOB_TEMPLATE *templ, json_value *
 
 	char script1[4*1024];
 	char script2[32];
-	if (is_kawpow || is_firopow) {
+	if (is_kawpow || is_firopow || is_phihash)
+	{
 		// coinbase v_in only current height
 		sprintf(script1, "%s", eheight);
 		int script_len = strlen(script1)/2;

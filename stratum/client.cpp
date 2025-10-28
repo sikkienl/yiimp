@@ -25,7 +25,7 @@ bool client_suggest_target(YAAMP_CLIENT *client, json_value *json_params)
 bool client_subscribe(YAAMP_CLIENT *client, json_value *json_params)
 {
 	//if(client_find_my_ip(client->sock->ip)) return false;
-	if (is_kawpow || is_firopow)
+	if (is_kawpow || is_firopow || is_phihash)
 		get_nonce_prefix(client->extranonce1_default);
 	else
 		get_next_extraonce1(client->extranonce1_default);
@@ -127,7 +127,8 @@ bool client_subscribe(YAAMP_CLIENT *client, json_value *json_params)
 		debuglog("new client with nonce %s\n", client->extranonce1);
 	}
 
-	if (is_kawpow || is_firopow) {
+	if (is_kawpow || is_firopow || is_phihash)
+	{
 		kawpow_send_nonceprefix(client);
 	}
 	else if (strstr(g_current_algo->name, "equihash") == g_current_algo->name) {
