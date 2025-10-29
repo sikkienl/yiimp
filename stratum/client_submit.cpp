@@ -502,7 +502,7 @@ void client_submit_error(YAAMP_CLIENT *client, YAAMP_JOB *job, int id, const cha
 bool client_submit(YAAMP_CLIENT *client, json_value *json_params)
 {
 	// simple backport, will need some rework
-	if (is_kawpow || is_firopow) {
+	if (is_kawpow || is_firopow || is_phihash) {
 		return kawpow_submit(client, json_params);
 	}
 	// submit(worker_name, jobid, extranonce2, ntime, nonce):
