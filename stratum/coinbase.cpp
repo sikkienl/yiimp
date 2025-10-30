@@ -180,6 +180,8 @@ void coinbase_create(YAAMP_COIND *coind, YAAMP_JOB_TEMPLATE *templ, json_value *
 	if(coind->txmessage)
 		strcpy(eversion1, "02000000");
 
+	if(!strcmp(g_stratum_algo,"flex")) strcpy(eversion1, "08000000");
+
 	const char *coinbase_payload = json_get_string(json_result, "coinbase_payload");
 
 	if(coinbase_payload && strlen(coinbase_payload) > 0)
