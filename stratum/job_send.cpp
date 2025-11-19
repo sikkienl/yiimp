@@ -122,7 +122,7 @@ void job_send_last(YAAMP_CLIENT *client)
 	client->jobid_sent = job->id;
 
 	char buffer[YAAMP_SMALLBUFSIZE];
-	if (is_kawpow || is_firopow || is_phihash)
+	if (is_kawpow || is_firopow || is_phihash || is_meowpow)
 	{
 		kawpow_job_mining_notify_buffer(job, client, buffer);
 	}
@@ -143,7 +143,7 @@ void job_send_jobid(YAAMP_CLIENT *client, int jobid)
 	}
 
 	char buffer[YAAMP_SMALLBUFSIZE];
-	if (is_kawpow || is_firopow || is_phihash)
+	if (is_kawpow || is_firopow || is_phihash || is_meowpow)
 	{
 		kawpow_job_mining_notify_buffer(job, client, buffer);
 	}
@@ -185,7 +185,7 @@ void job_broadcast(YAAMP_JOB *job)
 
 		char buffer[YAAMP_SMALLBUFSIZE];
 		memset(buffer, 0, sizeof(buffer));
-		if (is_kawpow || is_firopow || is_phihash)
+		if (is_kawpow || is_firopow || is_phihash || is_meowpow)
 		{
 			kawpow_job_mining_notify_buffer(job, client, buffer);
 		}

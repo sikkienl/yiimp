@@ -88,6 +88,7 @@ void *monitor_thread(void *p);
 bool is_kawpow = false;
 bool is_firopow = false;
 bool is_phihash = false;
+bool is_meowpow = false;
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -189,6 +190,7 @@ YAAMP_ALGO g_algos[] =
 	{"lyra2z330", lyra2z330_hash, 0x100, 0, 0},
 	{"m7m", m7m_hash, 0x10000, 0, 0},
 	{"memehash", meme_hash, 1, 0, 0}, /*PepePow Algo*/
+	{"meowpow", sha256_double_hash, 1, 0, 0},
 	{"megabtx", megabtx_hash, 0x100, 0, 0}, /* Bitcore New Algo*/
 	{"megamec", megamec_hash, 0x100, 0, 0}, /* Megacoin New Algo*/
 	{"mike", mike_hash, 0x10000, 0, 0},
@@ -390,6 +392,10 @@ int main(int argc, char **argv)
 	else if(!strcmp(g_current_algo->name,"phihash"))
 	{
 		is_phihash = true;
+	}
+	if (!strcmp(g_current_algo->name,"meowpow"))
+	{
+		is_meowpow = true;
 	}
 
 //	struct rlimit rlim_files = {0x10000, 0x10000};

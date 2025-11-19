@@ -76,6 +76,7 @@ extern CommonList g_list_source;
 extern bool is_kawpow;
 extern bool is_firopow;
 extern bool is_phihash;
+extern bool is_meowpow;
 
 extern int g_tcp_port;
 
