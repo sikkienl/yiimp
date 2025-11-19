@@ -638,7 +638,7 @@ YAAMP_JOB_TEMPLATE *coind_create_template(YAAMP_COIND *coind)
 	{
 		update_epoch(coind->id, templ->height);
 		templ->header_seed = get_kawpow_seed(templ->height);
-		if (is_kawpow) {
+		if (is_kawpow || is_phihash) {
 			templ->header_hash = build_header_hash(templ);
 		}
 	}
