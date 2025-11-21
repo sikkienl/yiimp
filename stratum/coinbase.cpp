@@ -690,14 +690,14 @@ void coinbase_create(YAAMP_COIND *coind, YAAMP_JOB_TEMPLATE *templ, json_value *
         return;
     }
 
-    else if(!strcmp(coind->symbol, "CLORE")||!strcmp(coind->symbol, "CMS")||!strcmp(coind->symbol, "PHI"))
+    else if(!strcmp(coind->symbol, "CLORE")||!strcmp(coind->symbol, "CMS")||!strcmp(coind->symbol, "MEWC")||!strcmp(coind->symbol, "PHI"))
     {
         // Community address required in coinbase to avoid "bad-cb-amount" rejection
 
         char script_payee[1024];
-		json_int_t coinbase_value = json_get_int(json_result, "coinbasevalue");
-		const char *community_address = json_get_string(json_result, "CommunityAutonomousAddress");
-		json_int_t community_amount = json_get_int(json_result, "CommunityAutonomousValue");
+        json_int_t coinbase_value = json_get_int(json_result, "coinbasevalue");
+        const char *community_address = json_get_string(json_result, "CommunityAutonomousAddress");
+        json_int_t community_amount = json_get_int(json_result, "CommunityAutonomousValue");
 
         json_int_t miner_amount = coinbase_value;
 
