@@ -229,6 +229,7 @@ YAAMP_ALGO g_algos[] =
 	{"skein2", skein2_hash, 1, 0, 0},
 	{"skunk", skunk_hash, 1, 0, 0},
 	{"sonoa", sonoa_hash, 1, 0, 0},
+	{"soterg", soterg_hash, 1, 0, 0},
 	{"timetravel", timetravel_hash, 0x100, 0, 0},
 	{"tribus", tribus_hash, 1, 0, 0},
 	{"vanilla", blakecoin_hash, 1, 0 },
@@ -393,7 +394,7 @@ int main(int argc, char **argv)
 	{
 		is_phihash = true;
 	}
-	if (!strcmp(g_current_algo->name,"meowpow"))
+	else if (!strcmp(g_current_algo->name,"meowpow"))
 	{
 		is_meowpow = true;
 	}
@@ -608,16 +609,8 @@ bool validate_hashfunctions() {
 		string hashdata;
 		string inputdata;
 	};
-	std::vector<Checkdata> VectorCheckdata;
 
-	VectorCheckdata = {
-		// Bitcoin Block 835622
-		{ std::string("sha256") ,    sha256_double_hash , std::string("0000000000000000000042e44a0e7f1de918a9f495affd7163e8ce60277cd31e") , std::string("00003e20f05d18db34a53d848ab906c5924e032a6edb0b1a74fa000000000000000000002f02bf9836314afed25ef4aa258c596995da0ae656dab671cf3abd1387ab1e70ebabfb65595a03174763046f") },
-		// ZeroOneCoin Block 1136413
-		{ std::string("neoscrypt") , neoscrypt_hash ,     std::string("000000001c04534a1170d4ab8206660383fed56853e09d436cf74d1cf7659c40") , std::string("00000020e73e6b6c9e318f193adb76aeb01ffd508c48a83e30b5394c4291cf67010000005d1210c46d9aca742c1619d2928d87e5eedf731f082249ef4fa7a592e35a5169a8132c66bab3011d24a69b06") },
-		// Innova Block 4385783
-		{ std::string("tribus") ,    tribus_hash ,        std::string("0000000073effdeee31dbbcc72a6a8aab9c6fc3abc65c184b91e913121529ed6") , std::string("06000000cc4dd52af9ce356116e04f1ae4973ed0e77f9f713d958266509daeba00000000b85a3f9fa0ec87b5b85cbb43a221f66fd2de0e05cef11f60f123f6d980f0f0bfe3811966fa60011d2bef40e6") },
-	};
+	std::vector<Checkdata> VectorCheckdata;
 
 	for(auto CurrentCheckdata : VectorCheckdata)
     {
