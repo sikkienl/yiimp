@@ -4,19 +4,19 @@
  * Copyright 2015
  * Daniel Dinu, Dmitry Khovratovich, Jean-Philippe Aumasson, and Samuel Neves
  *
- * You may use this work under the terms of a Creative Commons CC0 1.0 
+ * You may use this work under the terms of a Creative Commons CC0 1.0
  * License/Waiver or the Apache Public License 2.0, at your option. The terms of
  * these licenses can be found at:
  *
- * - CC0 1.0 Universal : http://creativecommons.org/publicdomain/zero/1.0
- * - Apache 2.0        : http://www.apache.org/licenses/LICENSE-2.0
+ * - CC0 1.0 Universal : https://creativecommons.org/publicdomain/zero/1.0
+ * - Apache 2.0        : https://www.apache.org/licenses/LICENSE-2.0
  *
  * You should have received a copy of both of these licenses along with this
  * software. If not, they may be obtained at the above URLs.
  */
 
 /*For memory wiping*/
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <windows.h>
 #include <winbase.h> /* For SecureZeroMemory */
 #endif
@@ -25,14 +25,21 @@
 #endif
 #define VC_GE_2005(version) (version >= 1400)
 
+/* for explicit_bzero() on glibc */
+#define _DEFAULT_SOURCE
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "core.h"
 #include "thread.h"
-#include "../blake2/blake2.h"
-#include "../blake2/blake2-impl.h"
+#include "blake2/blake2.h"
+#include "blake2/blake2-impl.h"
+
+#ifdef GENKAT
+#include "genkat.h"
+#endif
 
 #if defined(__clang__)
 #if __has_attribute(optnone)
@@ -116,12 +123,20 @@ void free_memory(const argon2_context *context, uint8_t *memory,
     }
 }
 
+#if defined(__OpenBSD__)
+#define HAVE_EXPLICIT_BZERO 1
+#elif defined(__GLIBC__) && defined(__GLIBC_PREREQ)
+#if __GLIBC_PREREQ(2,25)
+#define HAVE_EXPLICIT_BZERO 1
+#endif
+#endif
+
 void NOT_OPTIMIZED secure_wipe_memory(void *v, size_t n) {
-#if defined(_MSC_VER) && VC_GE_2005(_MSC_VER)
+#if defined(_MSC_VER) && VC_GE_2005(_MSC_VER) || defined(__MINGW32__)
     SecureZeroMemory(v, n);
 #elif defined memset_s
     memset_s(v, n, 0, n);
-#elif defined(__OpenBSD__)
+#elif defined(HAVE_EXPLICIT_BZERO)
     explicit_bzero(v, n);
 #else
     static void *(*const volatile memset_sec)(void *, int, size_t) = &memset;
@@ -161,6 +176,10 @@ void finalize(const argon2_context *context, argon2_instance_t *instance) {
             clear_internal_memory(blockhash.v, ARGON2_BLOCK_SIZE);
             clear_internal_memory(blockhash_bytes, ARGON2_BLOCK_SIZE);
         }
+
+#ifdef GENKAT
+        print_tag(context->out, context->outlen);
+#endif
 
         free_memory(context, (uint8_t *)instance->memory,
                     instance->memory_blocks, sizeof(block));
@@ -248,6 +267,9 @@ static int fill_memory_blocks_st(argon2_instance_t *instance) {
                 fill_segment(instance, position);
             }
         }
+#ifdef GENKAT
+        internal_kat(instance, r); /* Print all memory blocks */
+#endif
     }
     return ARGON2_OK;
 }
@@ -288,7 +310,7 @@ static int fill_memory_blocks_mt(argon2_instance_t *instance) {
 
     for (r = 0; r < instance->passes; ++r) {
         for (s = 0; s < ARGON2_SYNC_POINTS; ++s) {
-            uint32_t l;
+            uint32_t l, ll;
 
             /* 2. Calling threads */
             for (l = 0; l < instance->lanes; ++l) {
@@ -313,6 +335,9 @@ static int fill_memory_blocks_mt(argon2_instance_t *instance) {
                        sizeof(argon2_position_t));
                 if (argon2_thread_create(&thread[l], &fill_segment_thr,
                                          (void *)&thr_data[l])) {
+                    /* Wait for already running threads */
+                    for (ll = 0; ll < l; ++ll)
+                        argon2_thread_join(thread[ll]);
                     rc = ARGON2_THREAD_FAIL;
                     goto fail;
                 }
@@ -330,6 +355,10 @@ static int fill_memory_blocks_mt(argon2_instance_t *instance) {
                 }
             }
         }
+
+#ifdef GENKAT
+        internal_kat(instance, r); /* Print all memory blocks */
+#endif
     }
 
 fail:
@@ -345,14 +374,14 @@ fail:
 #endif /* ARGON2_NO_THREADS */
 
 int fill_memory_blocks(argon2_instance_t *instance) {
-    if (instance == NULL || instance->lanes == 0) {
-        return ARGON2_INCORRECT_PARAMETER;
+	if (instance == NULL || instance->lanes == 0) {
+	    return ARGON2_INCORRECT_PARAMETER;
     }
 #if defined(ARGON2_NO_THREADS)
     return fill_memory_blocks_st(instance);
 #else
     return instance->threads == 1 ?
-            fill_memory_blocks_st(instance) : fill_memory_blocks_mt(instance);
+			fill_memory_blocks_st(instance) : fill_memory_blocks_mt(instance);
 #endif
 }
 
@@ -529,7 +558,7 @@ void initial_hash(uint8_t *blockhash, argon2_context *context,
     store32(&value, context->t_cost);
     blake2b_update(&BlakeHash, (const uint8_t *)&value, sizeof(value));
 
-    store32(&value, ARGON2_VERSION_NUMBER);        
+    store32(&value, context->version);
     blake2b_update(&BlakeHash, (const uint8_t *)&value, sizeof(value));
 
     store32(&value, (uint32_t)type);
@@ -604,6 +633,10 @@ int initialize(argon2_instance_t *instance, argon2_context *context) {
     clear_internal_memory(blockhash + ARGON2_PREHASH_DIGEST_LENGTH,
                           ARGON2_PREHASH_SEED_LENGTH -
                               ARGON2_PREHASH_DIGEST_LENGTH);
+
+#ifdef GENKAT
+    initial_kat(blockhash, context, instance->type);
+#endif
 
     /* 3. Creating first blocks, we always have at least two blocks in a slice
      */
