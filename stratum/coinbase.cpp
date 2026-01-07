@@ -722,6 +722,38 @@ void coinbase_create(YAAMP_COIND *coind, YAAMP_JOB_TEMPLATE *templ, json_value *
         return;
     }
 
+    else if(!strcmp(coind->symbol, "SOTER"))
+    {
+        // Foundation Reserve Address required in coinbase to avoid "bad-cb-amount" rejection
+
+        char script_payee[1024];
+        json_int_t coinbase_value = json_get_int(json_result, "coinbasevalue");
+        const char *foundationreserve_address = json_get_string(json_result, "FoundationReserveAddress");
+        json_int_t foundationreserve_amount = json_get_int(json_result, "FoundationReserveValue");
+
+        json_int_t miner_amount = coinbase_value;
+
+        base58_decode(foundationreserve_address, script_payee);
+
+        // two outputs: miner + community
+        strcat(templ->coinb2, "02");
+
+        // miner output (pool)
+        job_pack_tx(coind, templ->coinb2, miner_amount, NULL);
+
+        // community output (autonomous address)
+        job_pack_tx(coind, templ->coinb2, foundationreserve_amount, script_payee);
+
+		if (templ->has_segwit_txs) strcat(templ->coinb2, commitment);
+
+        strcat(templ->coinb2, "00000000"); // locktime
+        coind->reward = (double)miner_amount / 100000000 * coind->reward_mul;
+
+        debuglog("[%s] Foundation Reserve fund added %s (%f)\n", coind->symbol, foundationreserve_address, (double)foundationreserve_amount/100000000);
+		debuglog("[%s] coinbase: %f\n", coind->symbol, coind->reward);
+        return;
+    }
+
 	//=================================================================================================================
 	//If allowed, start 'full auto' processing. Covers old and new masternodes, founder/charity and superblocks. Manual charity % from SQL is enabled.
 	//Successfully tested with: ROGU (smartnode+founder), VIVO (new MN), GBX (new MN), FTC (none), PXC (none)
